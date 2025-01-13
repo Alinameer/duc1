@@ -1,56 +1,25 @@
 "use client";
+
 import {
   Sidebar,
-  SidebarContent,
   SidebarHeader,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupLabel,
+  SidebarGroupContent,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible"; // Adjust the path if needed
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu"; // Adjust the path if needed
-import { ChevronDown, ChevronRight } from "lucide-react"; // Replace with your icon library if needed
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, FilePlus2, FolderPlus } from "lucide-react";
 import { useState } from "react";
-
-
-
-// Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "#",
-  },
-  {
-    title: "Inbox",
-    url: "#",
-  },
-  {
-    title: "Calendar",
-    url: "#",
-  },
-  {
-    title: "Search",
-    url: "#",
-  },
-  {
-    title: "Settings",
-    url: "#",
-  },
-];
+import Link from "next/link";
 
 const routes = [
   { label: "Frontend", path: "/frontend" },
@@ -64,7 +33,7 @@ export function AppSidebar() {
   const [selectedWorkspace, setSelectedWorkspace] = useState("Select Workspace");
 
   return (
-    <Sidebar>
+    <Sidebar className="absolute" >
       {/* Header with Workspace Dropdown */}
       <SidebarHeader>
         <SidebarMenu>
@@ -77,49 +46,31 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
-                <DropdownMenuItem onClick={() => setSelectedWorkspace("Acme Inc")}>
-                  <span>Acme Inc</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSelectedWorkspace("Acme Corp.")}>
-                  <span>Acme Corp.</span>
-                </DropdownMenuItem>
+                {routes.map((route) => (
+                  <DropdownMenuItem key={route.path}>
+                    <Link href={route.path}>
+                      <div onClick={() => setSelectedWorkspace(route.label)}>
+                        <span>{route.label}</span>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <Collapsible key={item.title} defaultOpen className="group/collapsible">
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className="flex items-center justify-between">
-                        <span>{item.title}</span>
-                        <ChevronDown className="h-4 w-4" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        <SidebarMenuSubItem>
-                          <a href={item.url}>Submenu Item 1</a>
-                        </SidebarMenuSubItem>
-                        <SidebarMenuSubItem>
-                          <a href={item.url}>Submenu Item 2</a>
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              ))}
+                <SidebarMenuItem className="flex w-full gap-2 items-center justify-center">
+                    <FolderPlus className="w-5 h-5 text-blue-500  " />
+                      <FilePlus2 className="w-5 h-5 text-blue-500" />
+                </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>
+        </SidebarMenu>
+      </SidebarHeader>
     </Sidebar>
   );
 }

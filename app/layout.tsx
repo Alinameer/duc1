@@ -1,19 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Header from "./components/Header";
+import { Inter } from "next/font/google";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import "./globals.css";
+import Header from "./components/Header";
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "TechDoc",
@@ -27,17 +18,34 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SidebarProvider>
-          <AppSidebar />
-          <main className="flex min-h-screen flex-col w-full">
-          <Header />
-            <SidebarTrigger />
-            {children}
-          </main>
-        </SidebarProvider>
+      <body>
+        <div
+          className={
+            "mx-auto w-full  bg-background border-border/40 dark:border-border min-[1800px]:max-w-[1536px] min-[1800px]:border-x flex justify-center items-center overflow-hidden relative "
+          }
+        >
+          <SidebarProvider>
+            <AppSidebar />
+
+            <main
+              className="
+          md:px-6 lg:px-10
+          px-4
+          py-4
+          h-screen overflow-y-auto scrollbar-hidden relative flex min-h-svh flex-1 flex-col peer-data-[variant=floating]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=floating]:mb-4 md:peer-data-[state=collapsed]:peer-data-[variant=floating]:ml-2 md:peer-data-[variant=floating]:ml-0  md:peer-data-[variant=floating]:rounded-xl 
+          md:peer-data-[variant=floating]:shadow 
+          border
+          
+          group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border
+          "
+            >
+              <Header />
+
+              <SidebarTrigger />
+              {children}
+            </main>
+          </SidebarProvider>
+        </div>
       </body>
     </html>
   );
