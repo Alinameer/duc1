@@ -7,9 +7,8 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -30,10 +29,54 @@ const routes = [
 ];
 
 export function AppSidebar() {
-  const [selectedWorkspace, setSelectedWorkspace] = useState("Select Workspace");
+  const [selectedWorkspace, setSelectedWorkspace] =
+    useState("Select Workspace");
+  const [folders, setFolders] = useState<string[]>([]);
+  const [files, setFiles] = useState<string[]>([]);
+  const [renamingItem, setRenamingItem] = useState<{
+    type: "folder" | "file";
+    index: number;
+  } | null>(null);
+  const [newName, setNewName] = useState("");
+
+  const handleAddFolder = () => {
+    const folderName = `New Folder ${folders.length + 1}`;
+    setFolders([...folders, folderName]);
+  };
+
+  const handleAddFile = () => {
+    const fileName = `New File ${files.length + 1}`;
+    setFiles([...files, fileName]);
+  };
+
+  const handleRightClick = (
+    event: React.MouseEvent,
+    type: "folder" | "file",
+    index: number
+  ) => {
+    event.preventDefault();
+    setRenamingItem({ type, index });
+    setNewName(type === "folder" ? folders[index] : files[index]);
+  };
+
+  const handleRename = () => {
+    if (renamingItem && newName.trim()) {
+      if (renamingItem.type === "folder") {
+        const updatedFolders = [...folders];
+        updatedFolders[renamingItem.index] = newName;
+        setFolders(updatedFolders);
+      } else {
+        const updatedFiles = [...files];
+        updatedFiles[renamingItem.index] = newName;
+        setFiles(updatedFiles);
+      }
+      setRenamingItem(null);
+      setNewName("");
+    }
+  };
 
   return (
-    <Sidebar className="absolute" >
+    <Sidebar className="absolute">
       {/* Header with Workspace Dropdown */}
       <SidebarHeader>
         <SidebarMenu>
@@ -59,16 +102,69 @@ export function AppSidebar() {
             </DropdownMenu>
           </SidebarMenuItem>
 
+          {/* Additional Menu Items */}
           <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 <SidebarMenuItem className="flex w-full gap-2 items-center justify-center">
-                    <FolderPlus className="w-5 h-5 text-blue-500  " />
-                      <FilePlus2 className="w-5 h-5 text-blue-500" />
+                  <FolderPlus
+                    className="w-5 h-5 text-blue-500 cursor-pointer"
+                    onClick={handleAddFolder}
+                  />
+                  <FilePlus2
+                    className="w-5 h-5 text-blue-500 cursor-pointer"
+                    onClick={handleAddFile}
+                  />
                 </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* Render Folders */}
+          {folders.map((folder, index) => (
+            <SidebarGroup
+              key={index}
+              onContextMenu={(e) => handleRightClick(e, "folder", index)}
+            >
+              {renamingItem?.type === "folder" &&
+              renamingItem.index === index ? (
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onBlur={handleRename}
+                  onKeyPress={(e) => e.key === "Enter" && handleRename()}
+                  autoFocus
+                />
+              ) : (
+                <SidebarGroupLabel>{folder}</SidebarGroupLabel>
+              )}
+              <SidebarGroupContent>
+                {/* You can add nested files or folders here if needed */}
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+
+          {/* Render Files */}
+          {files.map((file, index) => (
+            <SidebarMenuItem
+              key={index}
+              onContextMenu={(e) => handleRightClick(e, "file", index)}
+            >
+              {renamingItem?.type === "file" && renamingItem.index === index ? (
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onBlur={handleRename}
+                  onKeyPress={(e) => e.key === "Enter" && handleRename()}
+                  autoFocus
+                />
+              ) : (
+                <span>{file}</span>
+              )}
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarHeader>
     </Sidebar>
