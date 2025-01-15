@@ -1,5 +1,4 @@
-"use client"; // Mark this component as a client component
-
+"use client"; 
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -55,7 +54,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, ChevronRight, FilePlus2, FolderPlus } from "lucide-react";
+import { ChevronDown, ChevronRight, ClipboardPaste, Copy, Delete, DeleteIcon, Edit, FilePlus2, FolderPlus, Trash } from "lucide-react";
 import Link from "next/link";
 import {
   Collapsible,
@@ -122,11 +121,23 @@ export function AppSidebar() {
   const contextMenuItems: MenuItem[] = [
     {
       label: "Rename",
+      icon: <span className="w-4 h-4">{<Edit />}</span>,
       onClick: () => alert("Rename clicked"),
     },
     {
       label: "Delete",
+      icon: <span>{<Trash />}</span>,
       onClick: () => alert("Delete clicked"),
+    },
+    {
+      label: "Copy",
+      icon: <span>{<Copy />}</span>,
+      onClick: () => alert("Copy clicked"),
+    },
+    {
+      label: "Paste",
+      icon: <span>{<ClipboardPaste />}</span>,
+      onClick: () => alert("Paste clicked"),
     },
   ];
 
