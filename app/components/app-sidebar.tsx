@@ -1,4 +1,42 @@
-"use client";
+"use client"; // Mark this component as a client component
+
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+} from "@/components/ui/context-menu";
+import { ReactNode, useState, useRef } from "react";
+
+interface MenuItem {
+  label: string;
+  icon?: ReactNode;
+  onClick: () => void;
+}
+
+interface ReusableContextMenuProps {
+  trigger: ReactNode; // The content that triggers the context menu
+  items: MenuItem[]; // Array of menu items
+}
+
+export function ReusableContextMenu({
+  trigger,
+  items,
+}: ReusableContextMenuProps) {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>{trigger}</ContextMenuTrigger>
+      <ContextMenuContent className="bg-background border border-gray-200 rounded-lg shadow-lg">
+        {items.map((item, index) => (
+          <ContextMenuItem key={index} onClick={item.onClick}>
+            {item.icon && <span className="mr-2">{item.icon}</span>}
+            {item.label}
+          </ContextMenuItem>
+        ))}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
 
 import {
   Sidebar,
@@ -17,8 +55,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, FilePlus2, FolderPlus } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, ChevronRight, FilePlus2, FolderPlus } from "lucide-react";
 import Link from "next/link";
 import {
   Collapsible,
@@ -31,7 +68,7 @@ const routes = [
   { label: "Backend", path: "/backend" },
   { label: "API", path: "/api" },
   { label: "Server", path: "/server" },
-  { label: "Finans", path: "/finans" },
+  { label: "Finance", path: "/finance" },
 ];
 
 export function AppSidebar() {
@@ -40,36 +77,64 @@ export function AppSidebar() {
   const [subMenus, setSubMenus] = useState<{ id: string; items: string[] }[]>(
     []
   );
+  const [selectedSubMenuId, setSelectedSubMenuId] = useState<string | null>(
+    null
+  );
+
+  // Use a ref to track the open/closed state of each collapsible section
+  const collapsibleStates = useRef<Record<string, boolean>>({});
 
   const handleAddSubMenu = () => {
     const newSubMenu = {
-      id: `submenu-${subMenus.length + 1}`,
+      id: `Folder-${subMenus.length + 1}`,
       items: [],
     };
     setSubMenus([...subMenus, newSubMenu]);
+    setSelectedSubMenuId(newSubMenu.id); // Automatically select the newly created submenu
+    collapsibleStates.current[newSubMenu.id] = true; // Automatically open the newly created submenu
   };
 
-  const handleAddSubMenuItem = (subMenuId: string) => {
+  const handleAddSubMenuItem = () => {
+    if (!selectedSubMenuId) return;
     setSubMenus((prevSubMenus) =>
       prevSubMenus.map((subMenu) =>
-        subMenu.id === subMenuId
+        subMenu.id === selectedSubMenuId
           ? {
               ...subMenu,
-              items: [...subMenu.items, `item-${subMenu.items.length + 1}`],
+              items: [...subMenu.items, `Document-${subMenu.items.length + 1}`],
             }
           : subMenu
       )
     );
   };
 
+  const handleSelectSubMenu = (subMenuId: string) => {
+    setSelectedSubMenuId(subMenuId);
+  };
 
-  
+  const toggleCollapsible = (subMenuId: string) => {
+    collapsibleStates.current[subMenuId] =
+      !collapsibleStates.current[subMenuId];
+    // Force re-render by updating state
+    setSubMenus([...subMenus]);
+  };
+
+  const contextMenuItems: MenuItem[] = [
+    {
+      label: "Rename",
+      onClick: () => alert("Rename clicked"),
+    },
+    {
+      label: "Delete",
+      onClick: () => alert("Delete clicked"),
+    },
+  ];
 
   return (
     <Sidebar className="absolute">
-      {/* Header with Workspace Selection */}
       <SidebarHeader>
         <SidebarMenu>
+          {/* Workspace Selection */}
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -92,6 +157,7 @@ export function AppSidebar() {
             </DropdownMenu>
           </SidebarMenuItem>
 
+          {/* Add Submenu and Items */}
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -102,32 +168,57 @@ export function AppSidebar() {
                   />
                   <FilePlus2
                     className="w-5 h-5 text-blue-500"
-                    onClick={() =>
-                      handleAddSubMenuItem(subMenus[subMenus.length - 1]?.id)
-                    }
+                    onClick={handleAddSubMenuItem}
                   />
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
 
+          {/* Submenus */}
           {subMenus.map((subMenu) => (
             <SidebarGroup key={subMenu.id}>
-              <Collapsible defaultOpen className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton> <span>{<ChevronDown />}</span> {subMenu.id}</SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {subMenu.items.map((item) => (
-                        <SidebarMenuSubItem key={item}>
-                          {item}
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
+              <Collapsible
+                open={collapsibleStates.current[subMenu.id] || false}
+                onOpenChange={() => toggleCollapsible(subMenu.id)}
+                className="group/collapsible"
+              >
+                <ReusableContextMenu
+                  trigger={
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          className={`${
+                            selectedSubMenuId === subMenu.id
+                              ? "bg-blue-100"
+                              : ""
+                          }`}
+                          onClick={() => handleSelectSubMenu(subMenu.id)}
+                        >
+                          <span>
+                            {/* Conditional rendering based on ref state */}
+                            {collapsibleStates.current[subMenu.id] ? (
+                              <ChevronDown />
+                            ) : (
+                              <ChevronRight />
+                            )}
+                          </span>
+                          {subMenu.id}
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {subMenu.items.map((item) => (
+                            <SidebarMenuSubItem key={item}>
+                              {item}
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  }
+                  items={contextMenuItems}
+                />
               </Collapsible>
             </SidebarGroup>
           ))}
