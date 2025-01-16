@@ -3,8 +3,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Editor } from '@toast-ui/react-editor';
 import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
-
 import '@toast-ui/editor/dist/toastui-editor.css';
+import uml from '@toast-ui/editor-plugin-uml';
 
 const MyEditor = () => {
   const editorRef = useRef<Editor | null>(null);
@@ -33,7 +33,7 @@ const MyEditor = () => {
         initialEditType="wysiwyg"
         previewStyle="vertical"
         initialValue="Hello, Markdown!"
-        plugins={[colorSyntax]}
+        plugins={[colorSyntax, uml]} // Add the UML plugin here
       />
       <button
         onClick={handleSave}
@@ -46,4 +46,3 @@ const MyEditor = () => {
 };
 
 export default MyEditor;
-

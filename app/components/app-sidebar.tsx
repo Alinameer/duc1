@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -14,8 +14,8 @@ interface MenuItem {
 }
 
 interface ReusableContextMenuProps {
-  trigger: ReactNode; // The content that triggers the context menu
-  items: MenuItem[]; // Array of menu items
+  trigger: ReactNode;
+  items: MenuItem[];
 }
 
 export function ReusableContextMenu({
@@ -54,7 +54,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, ChevronRight, ClipboardPaste, Copy, Delete, DeleteIcon, Edit, FilePlus2, FolderPlus, Trash } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ClipboardPaste,
+  Copy,
+  Delete,
+  DeleteIcon,
+  Edit,
+  FilePlus2,
+  FolderPlus,
+  Trash,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Collapsible,
@@ -90,7 +101,7 @@ export function AppSidebar() {
     };
     setSubMenus([...subMenus, newSubMenu]);
     setSelectedSubMenuId(newSubMenu.id); // Automatically select the newly created submenu
-    collapsibleStates.current[newSubMenu.id] = true; // Automatically open the newly created submenu
+    collapsibleStates.current[newSubMenu.id] = true;
   };
 
   const handleAddSubMenuItem = () => {
@@ -114,7 +125,6 @@ export function AppSidebar() {
   const toggleCollapsible = (subMenuId: string) => {
     collapsibleStates.current[subMenuId] =
       !collapsibleStates.current[subMenuId];
-    // Force re-render by updating state
     setSubMenus([...subMenus]);
   };
 
