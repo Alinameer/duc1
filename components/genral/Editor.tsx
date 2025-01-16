@@ -33,7 +33,7 @@ const MyEditor = () => {
         initialEditType="wysiwyg"
         previewStyle="vertical"
         initialValue="Hello, Markdown!"
-        plugins={[colorSyntax, uml]} // Add the UML plugin here
+        plugins={[colorSyntax, uml]} 
       />
       <button
         onClick={handleSave}
