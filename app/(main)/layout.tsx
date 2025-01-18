@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "./components/app-sidebar";
-import "./globals.css";
-import Header from "./components/Header";
+import { AppSidebar } from "../components/app-sidebar";
+import Header from "../components/Header";
+import QueryProvider from "../provider/QueryProvider";
+import "../globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -42,7 +43,9 @@ export default function RootLayout({
               <Header />
 
               <SidebarTrigger />
+              <QueryProvider>
               {children}
+              </QueryProvider>
             </main>
           </SidebarProvider>
         </div>

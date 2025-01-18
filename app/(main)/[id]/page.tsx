@@ -1,4 +1,3 @@
-"use client"
 import MyEditor from "@/components/genral/Editor";
 
 export default function Home() {
