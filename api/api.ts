@@ -1,4 +1,4 @@
-const GETAPI = "https://jsonplaceholder.typicode.com/posts"
+/* const GETAPI = "https://jsonplaceholder.typicode.com/posts"
 
 
 export const fetchDocument = async () => {
@@ -18,4 +18,4 @@ export const fetchDocument = async () => {
     }
   };
   
-  fetchDocument();
+  fetchDocument(); */
