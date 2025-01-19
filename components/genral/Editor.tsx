@@ -1,142 +1,187 @@
 "use client";
-import { getDocument } from "@/api/api";
-
-import React, { useEffect, useRef, useState } from "react";
-import "@toast-ui/editor/dist/toastui-editor.css";
+import React, { useEffect, useRef, useReducer } from "react";
 import dynamic from "next/dynamic";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import "@toast-ui/editor/dist/toastui-editor.css";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import { getDocument } from "@/api/api";
 
 // Dynamically import the Editor component
-const Editor = dynamic(
-  () => import("@toast-ui/react-editor").then((mod) => mod.Editor),
-  { ssr: false }
-);
+const Editor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), { ssr: false });
 
-const MyEditor = () => {
-  const editorRef = useRef<any | null>(null);
-  const editorContainerRef = useRef<HTMLDivElement | null>(null);
-  const [plugins, setPlugins] = useState<any[]>([]);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const [dropdownItems, setDropdownItems] = useState<string[]>([]);
-  const [initialContent, setInitialContent] = useState<string>("Loading...");
+// Types
+interface DropdownState {
+  visible: boolean;
+  position: { top: number; left: number };
+  items: string[];
+}
 
- 
-  function post(data:any){
-    const res = axios.post("http://192.168.0.148:8000/api/document/create-doc",{title:"test",content:data})
-    return res
-  }
-const {mutate} = useMutation({
-  mutationFn: post
-})
-const handleSave = () => {
-  if (editorRef.current) {
-    const markdown = editorRef.current.getInstance().getMarkdown();
-    console.log("Markdown content:", markdown);
-    mutate(markdown)
-    localStorage.setItem("markdown", markdown);
+type DropdownAction =
+  | { type: "OPEN"; payload: { position: { top: number; left: number }; items: string[] } }
+  | { type: "CLOSE" };
+
+const dropdownReducer = (state: DropdownState, action: DropdownAction): DropdownState => {
+  switch (action.type) {
+    case "OPEN":
+      return { visible: true, position: action.payload.position, items: action.payload.items };
+    case "CLOSE":
+      return { ...state, visible: false };
+    default:
+      return state;
   }
 };
+
+const MyEditor = () => {
+  const editorRef = useRef<any>(null); // ToastUI editor instance
+  const editorContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const [dropdownState, dispatchDropdown] = useReducer(dropdownReducer, {
+    visible: false,
+    position: { top: 0, left: 0 },
+    items: [],
+  });
+
+  const { mutate } = useMutation({
+    mutationFn: (data: string) =>
+      axios.post("http://192.168.0.148:8000/api/document/create-doc", { title: "test", content: data }),
+  });
+
+  const handleSave = () => {
+    if (editorRef.current) {
+      const markdown = editorRef.current.getInstance().getMarkdown();
+      mutate(markdown);
+      localStorage.setItem("markdown", markdown);
+    }
+  };
+
   useEffect(() => {
     const loadPlugins = async () => {
-      const colorSyntax = (await import("@toast-ui/editor-plugin-color-syntax"))
-        .default;
-      const uml = (await import("@toast-ui/editor-plugin-uml")).default;
-      setPlugins([colorSyntax, uml]);
+      const [colorSyntax, uml] = await Promise.all([
+        import("@toast-ui/editor-plugin-color-syntax").then((mod) => mod.default),
+        import("@toast-ui/editor-plugin-uml").then((mod) => mod.default),
+      ]);
+      editorRef.current?.getInstance().addPlugins([colorSyntax, uml]);
     };
 
     loadPlugins();
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const documentData = await getDocument();
-        setInitialContent(documentData.content || ""); // Set the fetched content
-      } catch (error) {
-        console.error("Failed to fetch document:", error);
-        setInitialContent("");
-      }
-    };
+  // useEffect(() => {
+  //   const fetchDocument = async () => {
+  //     try {
+  //       const documentData = await getDocument();
+  //       editorRef.current?.getInstance().setMarkdown(documentData.content || "");
+  //     } catch (error) {
+  //       console.error("Failed to fetch document:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchDocument();
+  // }, []);
+const { data } = useQuery({
+  queryKey: ["documents"],
+  queryFn: getDocument,
+})
+useEffect(() => {
+  if(data){
+    editorRef.current?.getInstance().setMarkdown(data?.content || "");
+  }
 
+},[data])
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "/") {
       event.preventDefault();
-      const editorContainer = editorContainerRef.current;
-      const editorInstance = editorRef.current?.getInstance();
+      const selection = window.getSelection()?.getRangeAt(0);
+      if (!selection || !editorContainerRef.current) return;
 
-      if (editorContainer && editorInstance) {
-        const selection = window.getSelection();
-        const range = selection?.getRangeAt(0);
+      const rect = selection.getBoundingClientRect();
+      const dropdownItems = [
+        "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6",
+        "bold", "italic", "strike", "hr", "quote", "ul", "ol", "task", "indent", "outdent", "table", "image", "link", "code", "codeblock",
+      ];
 
-        if (range) {
-          const rect = range.getBoundingClientRect();
-          const containerRect = editorContainer.getBoundingClientRect();
-          const scrollY = window.scrollY;
-          const scrollX = window.scrollX;
+      const top = Math.min(rect.bottom, window.innerHeight - 200);
+      const left = Math.min(rect.left, window.innerWidth - 160);
 
-          // Calculate the position of the dropdown
-          let top = rect.bottom + scrollY;
-          let left = rect.left + scrollX;
-
-          const dropdownHeight = 200;
-          const dropdownWidth = 160;
-
-          if (top + dropdownHeight > window.innerHeight + scrollY) {
-            top = rect.top + scrollY - dropdownHeight;
-          }
-
-          if (left + dropdownWidth > window.innerWidth + scrollX) {
-            left = rect.right + scrollX - dropdownWidth;
-          }
-
-          setDropdownPosition({ top, left });
-          setDropdownVisible(true);
-
-          // Define dropdown items manually based on available commands
-          const items = [
-            "Heading1",
-            "bold",
-            "italic",
-            "strike",
-            "hr",
-            "quote",
-            "ul",
-            "ol",
-            "task",
-            "indent",
-            "outdent",
-            "table",
-            "image",
-            "link",
-            "code",
-            "codeblock",
-          ];
-          setDropdownItems(items);
-        }
-      }
+      dispatchDropdown({
+        type: "OPEN",
+        payload: { position: { top, left }, items: dropdownItems },
+      });
     } else if (event.key !== "Tab") {
-      setDropdownVisible(false);
+      dispatchDropdown({ type: "CLOSE" });
     }
   };
 
   const handleDropdownSelect = (item: string) => {
     if (editorRef.current) {
       const editorInstance = editorRef.current.getInstance();
-      editorInstance.exec(item); 
+      switch (item) {
+        case "Heading 1":
+          editorInstance.exec("heading", { level: 1 });
+          break;
+        case "Heading 2":
+          editorInstance.exec("heading", { level: 2 });
+          break;
+        case "Heading 3":
+          editorInstance.exec("heading", { level: 3 });
+          break;
+        case "Heading 4":
+          editorInstance.exec("heading", { level: 4 });
+          break;
+        case "Heading 5":
+          editorInstance.exec("heading", { level: 5 });
+          break;
+        case "Heading 6":
+          editorInstance.exec("heading", { level: 6 });
+          break;
+        case "bold":
+          editorInstance.exec("bold");
+          break;
+        case "italic":
+          editorInstance.exec("italic");
+          break;
+        case "strike":
+          editorInstance.exec("strike");
+          break;
+        case "hr":
+          editorInstance.exec("hr");
+          break;
+        case "quote":
+          editorInstance.exec("blockquote");
+          break;
+        case "ul":
+          editorInstance.exec("bulletList");
+          break;
+        case "ol":
+          editorInstance.exec("orderedList");
+          break;
+        case "task":
+          editorInstance.exec("taskList");
+          break;
+        case "indent":
+          editorInstance.exec("indent");
+          break;
+        case "outdent":
+          editorInstance.exec("outdent");
+          break;
+        case "code":
+          editorInstance.exec("code");
+          break;
+        case "codeblock":
+          editorInstance.exec("codeBlock");
+          break;
+        default:
+          break;
+      }
+      editorInstance.focus(); // Restore focus to the editor
     }
-    setDropdownVisible(false);
+    dispatchDropdown({ type: "CLOSE" });
   };
 
   return (
@@ -146,55 +191,40 @@ const handleSave = () => {
         onKeyDown={handleKeyDown}
         tabIndex={0}
         className="focus:outline-none"
+        aria-label="Markdown editor"
       >
-        {plugins.length > 0 && (
-          <Editor
-            ref={editorRef}
-            height="800px"
-            initialEditType="markdown"
-            previewStyle="vertical"
-            initialValue={initialContent} 
-            plugins={plugins}
-          />
-        )}
+        <Editor
+          ref={editorRef}
+          height="800px"
+          initialEditType="markdown"
+          previewStyle="vertical"
+        />
       </div>
 
-      <button
-        onClick={handleSave}
-        className="mt-4 p-2 bg-blue-500 text-white rounded"
-      >
+      <button onClick={handleSave} className="mt-4 p-2 bg-blue-500 text-white rounded">
         Save
       </button>
 
-      <DropdownMenu open={dropdownVisible} onOpenChange={setDropdownVisible}>
-        <DropdownMenuTrigger asChild>
-          <div
-            style={{
-              position: "absolute",
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-              transform: "translateY(5px)", // Slight offset to prevent overlap
-            }}
-          />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="bg-white border rounded shadow-lg w-40"
-          style={{
-            position: "fixed",
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-          }}
-        >
-          {dropdownItems.map((item) => (
-            <DropdownMenuItem
-              key={item}
-              onClick={() => handleDropdownSelect(item)}
-            >
-              {item}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {dropdownState.visible && (
+        <DropdownMenu open={dropdownState.visible} onOpenChange={() => dispatchDropdown({ type: "CLOSE" })}>
+          <DropdownMenuTrigger asChild>
+            <div
+              style={{
+                position: "absolute",
+                top: dropdownState.position.top,
+                left: dropdownState.position.left,
+              }}
+            />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="bg-white border rounded shadow-lg w-40">
+            {dropdownState.items.map((item) => (
+              <DropdownMenuItem key={item} onClick={() => handleDropdownSelect(item)}>
+                {item}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 };

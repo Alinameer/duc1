@@ -1,52 +1,108 @@
-import Link from 'next/link';
-import React from 'react';
+"use client";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { signInSchema } from "../AuthSchema"; // assuming this is where your schema is located
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { z } from "zod";
+import { signin } from "@/api/api";
+
+// Updated API endpoint
+// const signIn = async (data: { username: string; password: string }) => {
+//   const response = await fetch("http://192.168.0.148:8000/api/user/login", {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify(data),
+//   });
+
+//   if (!response.ok) {
+//     throw new Error("Failed to register user");
+//   }
+
+//   return response.json();
+// };
 
 const SignIn = () => {
+  const { mutate } = useMutation({
+    mutationFn: signin,
+    onSuccess: (data) => {
+      window.location.href = "/";
+    },
+    onError: (error) => {
+      console.error("Error during login:", error);
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof signInSchema>) {
+    mutate(values);
+  }
+
+  const form = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
   return (
-    <>
-      <h2 className="text-2xl font-semibold text-center mb-6">Log In</h2>
-      <form>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            className="mt-1 p-2 w-full border border-gray-300 rounded-lg"
-            required
-          />
-        </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your username" {...field} />
+              </FormControl>
+              <FormDescription>
+                This is your public display name.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            className="mt-1 p-2 w-full border border-gray-300 rounded-lg"
-            required
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Make sure your password is at least 6 characters long.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-        >
-          Sign In
-        </button>
+        <Button type="submit">Submit</Button>
       </form>
-
-      <div className="mt-4 text-center">
-        <p className="text-sm">
-          Don't have an account?{' '}
-          <Link className="text-blue-500" href="/auth/sign-up">Sign up</Link>
-            
-       
-        </p>
-      </div>
-    </>
+    </Form>
   );
 };
 

@@ -1,65 +1,102 @@
-import Link from 'next/link';
-import React from 'react';
+"use client";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { signUpSchema } from "../AuthSchema"; // Assuming this is where your schema is located
+import { zodResolver } from "@hookform/resolvers/zod";
 
-const SighnUp = () => {
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { z } from "zod";
+
+const SignUp = () => {
+  function onSubmit(values: z.infer<typeof signUpSchema>) {
+    console.log(values);
+  }
+
+  const form = useForm<z.infer<typeof signUpSchema>>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
   return (
-    <>
-      <h2 className="text-2xl font-semibold text-center mb-6">Sign Up</h2>
-      <form>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            className="mt-1 p-2 w-full border border-gray-300 rounded-lg"
-            required
-          />
-        </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Username Field */}
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your username" {...field} />
+              </FormControl>
+              <FormDescription>
+                This is your public display name.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            className="mt-1 p-2 w-full border border-gray-300 rounded-lg"
-            required
-          />
-        </div>
+        {/* Password Field */}
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="Enter your password" {...field} />
+              </FormControl>
+              <FormDescription>
+                Make sure your password is at least 6 characters long.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div className="mb-6">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-            Confirm Password
-          </label>
-          <input
-            id="confirmPassword"
-            type="password"
-            className="mt-1 p-2 w-full border border-gray-300 rounded-lg"
-            required
-          />
-        </div>
+        {/* Confirm Password Field */}
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="Confirm your password"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Re-enter your password for confirmation.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-        >
-          Sign Up
-        </button>
+        {/* Submit Button */}
+        <Button type="submit">Submit</Button>
       </form>
-
-      <div className="mt-4 text-center">
-        <p className="text-sm">
-          Already have an account?{' '}
-          <Link className="text-blue-500" href="/auth/sign-in">Sign In</Link>
-            
-       
-        </p>
-      </div>
-    </>
+    </Form>
   );
 };
 
-export default SighnUp;
+export default SignUp;
