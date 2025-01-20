@@ -9,9 +9,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!token) {
+/*   if (!token) {
     return NextResponse.redirect(new URL("/auth/sign-in", req.url));
-  }
+  } */
 
   return NextResponse.next();
 }

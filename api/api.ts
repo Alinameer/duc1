@@ -9,7 +9,7 @@ export const getDocument = async () => {
     return response.data; // Return the data from the API
   } catch (error) {
     console.error("Error fetching document:", error);
-    throw error; // Handle the error as needed
+    throw error; 
   }
 };
 export const signin = async (data: { username: string; password: string }) => {
@@ -23,6 +23,6 @@ export const signin = async (data: { username: string; password: string }) => {
     return response.data; // Return the data from the API
   } catch (error) {
     console.error("Error during login:", error);
-    throw error; // Handle the error as needed
+    throw error; 
   }
 };

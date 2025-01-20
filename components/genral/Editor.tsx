@@ -97,13 +97,15 @@ useEffect(() => {
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "/") {
       event.preventDefault();
+
       const selection = window.getSelection()?.getRangeAt(0);
       if (!selection || !editorContainerRef.current) return;
 
       const rect = selection.getBoundingClientRect();
+      const editorRect = editorContainerRef.current.getBoundingClientRect();
       const dropdownItems = [
         "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6",
-        "bold", "italic", "strike", "hr", "quote", "ul", "ol", "task", "indent", "outdent", "table", "image", "link", "code", "codeblock",
+        "bold", "italic", "strike", "hr", "ul", "ol", "task","code", "codeblock",
       ];
 
       const top = Math.min(rect.bottom, window.innerHeight - 200);
@@ -152,9 +154,6 @@ useEffect(() => {
         case "hr":
           editorInstance.exec("hr");
           break;
-        case "quote":
-          editorInstance.exec("blockquote");
-          break;
         case "ul":
           editorInstance.exec("bulletList");
           break;
@@ -163,12 +162,6 @@ useEffect(() => {
           break;
         case "task":
           editorInstance.exec("taskList");
-          break;
-        case "indent":
-          editorInstance.exec("indent");
-          break;
-        case "outdent":
-          editorInstance.exec("outdent");
           break;
         case "code":
           editorInstance.exec("code");
@@ -179,7 +172,7 @@ useEffect(() => {
         default:
           break;
       }
-      editorInstance.focus(); // Restore focus to the editor
+      editorInstance.focus(); 
     }
     dispatchDropdown({ type: "CLOSE" });
   };
@@ -206,7 +199,7 @@ useEffect(() => {
       </button>
 
       {dropdownState.visible && (
-        <DropdownMenu open={dropdownState.visible} onOpenChange={() => dispatchDropdown({ type: "CLOSE" })}>
+        <DropdownMenu  open={dropdownState.visible} onOpenChange={() => dispatchDropdown({ type: "CLOSE" })}>
           <DropdownMenuTrigger asChild>
             <div
               style={{
