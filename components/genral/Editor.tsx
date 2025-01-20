@@ -72,44 +72,50 @@ const MyEditor = () => {
     loadPlugins();
   }, []);
 
-  // useEffect(() => {
-  //   const fetchDocument = async () => {
-  //     try {
-  //       const documentData = await getDocument();
-  //       editorRef.current?.getInstance().setMarkdown(documentData.content || "");
-  //     } catch (error) {
-  //       console.error("Failed to fetch document:", error);
-  //     }
-  //   };
+  const { data } = useQuery({
+    queryKey: ["documents"],
+    queryFn: getDocument,
+  });
 
-  //   fetchDocument();
-  // }, []);
-const { data } = useQuery({
-  queryKey: ["documents"],
-  queryFn: getDocument,
-})
-useEffect(() => {
-  if(data){
-    editorRef.current?.getInstance().setMarkdown(data?.content || "");
-  }
+  useEffect(() => {
+    if (data) {
+      editorRef.current?.getInstance().setMarkdown(data?.content || "");
+    }
+  }, [data]);
 
-},[data])
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "/") {
       event.preventDefault();
 
-      const selection = window.getSelection()?.getRangeAt(0);
-      if (!selection || !editorContainerRef.current) return;
+      const editorInstance = editorRef.current?.getInstance();
+      if (!editorInstance || !editorContainerRef.current) return;
 
-      const rect = selection.getBoundingClientRect();
+      // Get the editor's DOM element
+      const editorElement = editorInstance.getEditorElements().mdEditor;
+
+      // Get the cursor's position within the editor
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+
+      // Calculate the position relative to the editor container
       const editorRect = editorContainerRef.current.getBoundingClientRect();
+
+      // Fallback position if the cursor is at the start of the editor
+      const isCursorAtStart = rect.top === 0 && rect.left === 0;
+      const top = isCursorAtStart
+        ? editorElement.scrollTop // Use the top of the editor's content area
+        : rect.top - editorRect.top + editorElement.scrollTop;
+      const left = isCursorAtStart
+        ? 0 // Use the left of the editor's content area
+        : rect.left - editorRect.left;
+
       const dropdownItems = [
         "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6",
-        "bold", "italic", "strike", "hr", "ul", "ol", "task","code", "codeblock",
+        "bold", "italic", "strike", "hr", "ul", "ol", "task", "code", "codeblock",
       ];
-
-      const top = Math.min(rect.bottom, window.innerHeight - 200);
-      const left = Math.min(rect.left, window.innerWidth - 160);
 
       dispatchDropdown({
         type: "OPEN",
@@ -172,7 +178,7 @@ useEffect(() => {
         default:
           break;
       }
-      editorInstance.focus(); 
+      editorInstance.focus();
     }
     dispatchDropdown({ type: "CLOSE" });
   };
@@ -199,24 +205,27 @@ useEffect(() => {
       </button>
 
       {dropdownState.visible && (
-        <DropdownMenu  open={dropdownState.visible} onOpenChange={() => dispatchDropdown({ type: "CLOSE" })}>
-          <DropdownMenuTrigger asChild>
-            <div
-              style={{
-                position: "absolute",
-                top: dropdownState.position.top,
-                left: dropdownState.position.left,
-              }}
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-white border rounded shadow-lg w-40">
-            {dropdownState.items.map((item) => (
-              <DropdownMenuItem key={item} onClick={() => handleDropdownSelect(item)}>
-                {item}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div
+          style={{
+            position: "absolute",
+            top: dropdownState.position.top,
+            left: dropdownState.position.left,
+            zIndex: 1000, // Ensure the dropdown is above other elements
+          }}
+        >
+          <DropdownMenu open={dropdownState.visible} onOpenChange={() => dispatchDropdown({ type: "CLOSE" })}>
+            <DropdownMenuTrigger asChild>
+              <div />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-white border rounded shadow-lg w-40">
+              {dropdownState.items.map((item) => (
+                <DropdownMenuItem key={item} onClick={() => handleDropdownSelect(item)}>
+                  {item}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       )}
     </div>
   );

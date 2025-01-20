@@ -26,3 +26,18 @@ export const signin = async (data: { username: string; password: string }) => {
     throw error; 
   }
 };
+
+export const signUp = async (data: { username: string; password: string }) => {
+  const cook = await cookies();
+  try {
+    const response = await axios.post(`${API_BASE_URL}/user/register`, data);
+    if (response.status !== 201) {
+      return { success: false, message: response.data.message };
+    }
+    cook.set("token", response.data.access);
+    return response.data; // Return the data from the API
+  } catch (error) {
+    console.error("Error during signup:", error);
+    throw error;
+  }
+};

@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { signUpSchema } from "../AuthSchema"; // Assuming this is where your schema is located
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
@@ -16,10 +15,24 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
+import { signUpSchema } from "../AuthSchema";
+import { signUp } from "@/api/api";
+import { useMutation } from "@tanstack/react-query";
 
 const SignUp = () => {
+
+  const { mutate } = useMutation({
+    mutationFn: signUp,
+    onSuccess: (data) => {
+      window.location.href = "/";
+    },
+    onError: (error) => {
+      console.error("Error during signup:", error);
+    },
+  });
+
   function onSubmit(values: z.infer<typeof signUpSchema>) {
-    console.log(values);
+    mutate(values);
   }
 
   const form = useForm<z.infer<typeof signUpSchema>>({
@@ -34,7 +47,6 @@ const SignUp = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Username Field */}
         <FormField
           control={form.control}
           name="username"
@@ -52,7 +64,6 @@ const SignUp = () => {
           )}
         />
 
-        {/* Password Field */}
         <FormField
           control={form.control}
           name="password"
