@@ -41,3 +41,20 @@ export const signUp = async (data: { username: string; password: string }) => {
     throw error;
   }
 };
+
+export const getRoles = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/role/get_all`);
+    const rolesData = response.data;
+
+    const roles = rolesData.map((item: { id: string; role: string }) => ({
+      id: item.id,
+      role: item.role,
+    }));
+
+    return roles; 
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    throw error;
+  }
+};

@@ -140,7 +140,7 @@ export function AppSidebar() {
       onClick: () => alert("Delete clicked"),
     },
     {
-      label: "Copy",
+      label: "cut",
       icon: <span>{<Copy />}</span>,
       onClick: () => alert("Copy clicked"),
     },

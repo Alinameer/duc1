@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getDocument } from "@/api/api";
+import { hasPermission, Role } from "@/lib/auth";
 
 // Dynamically import the Editor component
 const Editor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), { ssr: false });
@@ -26,6 +27,10 @@ type DropdownAction =
   | { type: "OPEN"; payload: { position: { top: number; left: number }; items: string[] } }
   | { type: "CLOSE" };
 
+interface MyEditorProps {
+  user: { id: string; role?: Role };
+}
+
 const dropdownReducer = (state: DropdownState, action: DropdownAction): DropdownState => {
   switch (action.type) {
     case "OPEN":
@@ -37,7 +42,7 @@ const dropdownReducer = (state: DropdownState, action: DropdownAction): Dropdown
   }
 };
 
-const MyEditor = () => {
+const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
   const editorRef = useRef<any>(null); // ToastUI editor instance
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -72,16 +77,24 @@ const MyEditor = () => {
     loadPlugins();
   }, []);
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["documents"],
     queryFn: getDocument,
   });
 
   useEffect(() => {
-    if (data) {
-      editorRef.current?.getInstance().setMarkdown(data?.content || "");
+    if (data && editorRef.current) {
+      editorRef.current.getInstance().setMarkdown(data.content || "");
     }
   }, [data]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading document.</div>;
+  }
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "/") {
@@ -102,14 +115,12 @@ const MyEditor = () => {
 
       // Calculate the position relative to the editor container
       const editorRect = editorContainerRef.current.getBoundingClientRect();
-
-      // Fallback position if the cursor is at the start of the editor
       const isCursorAtStart = rect.top === 0 && rect.left === 0;
       const top = isCursorAtStart
-        ? editorElement.scrollTop // Use the top of the editor's content area
+        ? editorElement.scrollTop
         : rect.top - editorRect.top + editorElement.scrollTop;
       const left = isCursorAtStart
-        ? 0 // Use the left of the editor's content area
+        ? 0 
         : rect.left - editorRect.left;
 
       const dropdownItems = [
@@ -195,7 +206,8 @@ const MyEditor = () => {
         <Editor
           ref={editorRef}
           height="800px"
-          initialEditType="markdown"
+          initialValue={data?.content || ""}
+          initialEditType="wysiwyg"
           previewStyle="vertical"
         />
       </div>
@@ -204,13 +216,19 @@ const MyEditor = () => {
         Save
       </button>
 
+       {hasPermission(user, "edit") && (
+        <button className="mt-4 p-2 bg-green-500 text-white rounded ml-2">
+          Edit
+        </button>
+      )} 
+
       {dropdownState.visible && (
         <div
           style={{
             position: "absolute",
             top: dropdownState.position.top,
             left: dropdownState.position.left,
-            zIndex: 1000, // Ensure the dropdown is above other elements
+            zIndex: 1000,
           }}
         >
           <DropdownMenu open={dropdownState.visible} onOpenChange={() => dispatchDropdown({ type: "CLOSE" })}>
