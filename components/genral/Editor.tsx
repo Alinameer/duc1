@@ -12,9 +12,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getDocument } from "@/api/api";
 import { hasPermission, Role } from "@/lib/auth";
+import Prism from "prismjs";
+import "prismjs/themes/prism.css"; // Default Prism.js theme (optional, but recommended)
+import "prismjs/components/prism-javascript"; // JavaScript syntax highlighting
+import "prismjs/components/prism-python"; // Python syntax highlighting
+import "prismjs/components/prism-css"; // CSS syntax highlighting
+import "prismjs/components/prism-typescript"; // TypeScript syntax highlighting
+import "prismjs/components/prism-bash"; // Bash syntax highlighting
+import "prismjs/components/prism-json"; // JSON syntax highlighting
 
 // Dynamically import the Editor component
 const Editor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), { ssr: false });
+
+// Import plugins
+import chart from '@toast-ui/editor-plugin-chart';
+import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight';
+import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
+import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell';
+import uml from '@toast-ui/editor-plugin-uml';
 
 // Types
 interface DropdownState {
@@ -77,7 +92,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
     loadPlugins();
   }, []);
 
-  const { data, isLoading, isError } = useQuery({
+/*   const { data, isLoading, isError } = useQuery({
     queryKey: ["documents"],
     queryFn: getDocument,
   });
@@ -94,7 +109,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
 
   if (isError) {
     return <div>Error loading document.</div>;
-  }
+  } */
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "/") {
@@ -206,9 +221,16 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
         <Editor
           ref={editorRef}
           height="800px"
-          initialValue={data?.content || ""}
+          initialValue={/* data?.content || */ ""}
           initialEditType="wysiwyg"
           previewStyle="vertical"
+          plugins={[
+            [chart, { minWidth: 100, maxWidth: 600, minHeight: 100, maxHeight: 300 }],
+            [codeSyntaxHighlight, { highlighter: Prism }],
+            colorSyntax,
+            tableMergedCell,
+            uml
+          ]}
         />
       </div>
 
@@ -216,11 +238,11 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
         Save
       </button>
 
-       {hasPermission(user, "edit") && (
+      {hasPermission(user, "edit") && (
         <button className="mt-4 p-2 bg-green-500 text-white rounded ml-2">
           Edit
         </button>
-      )} 
+      )}
 
       {dropdownState.visible && (
         <div

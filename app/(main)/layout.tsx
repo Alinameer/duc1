@@ -5,6 +5,7 @@ import { AppSidebar } from "../components/app-sidebar";
 import Header from "../components/Header";
 import QueryProvider from "../provider/QueryProvider";
 import "../globals.css";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default function RootLayout({
       <body>
         <div
           className={
-            "mx-auto w-full  bg-background border-border/40 dark:border-border min-[1800px]:max-w-[1536px] min-[1800px]:border-x flex justify-center items-center overflow-hidden relative "
+            "mx-auto w-full bg-background border-border/40 dark:border-border min-[1800px]:max-w-[1536px] min-[1800px]:border-x flex justify-center items-center overflow-hidden relative"
           }
         >
           <SidebarProvider>
@@ -30,9 +31,6 @@ export default function RootLayout({
 
             <main
               className="
-          md:px-6 lg:px-10
-          px-4
-          py-4
           h-screen overflow-y-auto scrollbar-hidden relative flex min-h-svh flex-1 flex-col peer-data-[variant=floating]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=floating]:mb-4 md:peer-data-[state=collapsed]:peer-data-[variant=floating]:ml-2 md:peer-data-[variant=floating]:ml-0  md:peer-data-[variant=floating]:rounded-xl 
           md:peer-data-[variant=floating]:shadow 
           border
@@ -42,10 +40,7 @@ export default function RootLayout({
             >
               <Header />
 
-              <SidebarTrigger />
-              <QueryProvider>
-              {children}
-              </QueryProvider>
+              <QueryProvider>{children}</QueryProvider>
             </main>
           </SidebarProvider>
         </div>
