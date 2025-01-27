@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useReducer } from "react";
+import React, { useEffect, useRef, useReducer, useState } from "react";
 import dynamic from "next/dynamic";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getDocument } from "@/api/api";
 import { hasPermission, Role } from "@/lib/auth";
-import Prism from "prismjs";
+/* import Prism from "prismjs";
 import "prismjs/themes/prism.css"; // Default Prism.js theme (optional, but recommended)
 import "prismjs/components/prism-javascript"; // JavaScript syntax highlighting
 import "prismjs/components/prism-python"; // Python syntax highlighting
@@ -20,16 +20,10 @@ import "prismjs/components/prism-css"; // CSS syntax highlighting
 import "prismjs/components/prism-typescript"; // TypeScript syntax highlighting
 import "prismjs/components/prism-bash"; // Bash syntax highlighting
 import "prismjs/components/prism-json"; // JSON syntax highlighting
+ */
 
-// Dynamically import the Editor component
+
 const Editor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), { ssr: false });
-
-// Import plugins
-import chart from '@toast-ui/editor-plugin-chart';
-import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight';
-import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
-import tableMergedCell from '@toast-ui/editor-plugin-table-merged-cell';
-import uml from '@toast-ui/editor-plugin-uml';
 
 // Types
 interface DropdownState {
@@ -72,27 +66,42 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
       axios.post("http://192.168.0.148:8000/api/document/create-doc", { title: "test", content: data }),
   });
 
-  const handleSave = () => {
-    if (editorRef.current) {
-      const markdown = editorRef.current.getInstance().getMarkdown();
-      mutate(markdown);
-      localStorage.setItem("markdown", markdown);
-    }
-  };
+  const [plugins, setPlugins] = useState<any[]>([]);
 
   useEffect(() => {
     const loadPlugins = async () => {
-      const [colorSyntax, uml] = await Promise.all([
-        import("@toast-ui/editor-plugin-color-syntax").then((mod) => mod.default),
-        import("@toast-ui/editor-plugin-uml").then((mod) => mod.default),
+      // Dynamically import Prism.js in the useEffect hook (only client-side)
+      const { default: Prism } = await import("prismjs");
+      
+      
+      // Dynamically import Toast UI editor plugins
+      const [
+        codeSyntaxHighlight,
+        colorSyntax,
+        tableMergedCell,
+        uml,
+        chart
+      ] = await Promise.all([
+        import('@toast-ui/editor-plugin-code-syntax-highlight').then((mod) => mod.default),
+        import('@toast-ui/editor-plugin-color-syntax').then((mod) => mod.default),
+        import('@toast-ui/editor-plugin-table-merged-cell').then((mod) => mod.default),
+        import('@toast-ui/editor-plugin-uml').then((mod) => mod.default),
+        import('@toast-ui/editor-plugin-chart').then((mod) => mod.default),
       ]);
-      editorRef.current?.getInstance().addPlugins([colorSyntax, uml]);
+
+      setPlugins([
+        [chart, { minWidth: 100, maxWidth: 600, minHeight: 100, maxHeight: 300 }],
+        [codeSyntaxHighlight, { highlighter: Prism }],
+        colorSyntax,
+        tableMergedCell,
+        uml
+      ]);
     };
 
     loadPlugins();
   }, []);
 
-/*   const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["documents"],
     queryFn: getDocument,
   });
@@ -103,13 +112,13 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
     }
   }, [data]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isError) {
-    return <div>Error loading document.</div>;
-  } */
+  const handleSave = () => {
+    if (editorRef.current) {
+      const markdown = editorRef.current.getInstance().getMarkdown();
+      mutate(markdown);
+      localStorage.setItem("markdown", markdown);
+    }
+  };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "/") {
@@ -209,6 +218,14 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
     dispatchDropdown({ type: "CLOSE" });
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading document.</div>;
+  }
+
   return (
     <div className="relative">
       <div
@@ -221,16 +238,10 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
         <Editor
           ref={editorRef}
           height="800px"
-          initialValue={/* data?.content || */ ""}
+          initialValue={data?.content || ""}
           initialEditType="wysiwyg"
           previewStyle="vertical"
-          plugins={[
-            [chart, { minWidth: 100, maxWidth: 600, minHeight: 100, maxHeight: 300 }],
-            [codeSyntaxHighlight, { highlighter: Prism }],
-            colorSyntax,
-            tableMergedCell,
-            uml
-          ]}
+          plugins={plugins} // Passing the dynamically loaded plugins
         />
       </div>
 
@@ -238,7 +249,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
         Save
       </button>
 
-      {hasPermission(user, "edit") && (
+      {hasPermission(user, 'view') && (
         <button className="mt-4 p-2 bg-green-500 text-white rounded ml-2">
           Edit
         </button>

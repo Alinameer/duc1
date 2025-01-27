@@ -38,9 +38,10 @@ export default function RootLayout({
           group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border
           "
             >
+              <QueryProvider>
               <Header />
 
-              <QueryProvider>{children}</QueryProvider>
+                {children}</QueryProvider>
             </main>
           </SidebarProvider>
         </div>

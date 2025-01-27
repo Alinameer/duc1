@@ -41,6 +41,20 @@ export const signUp = async (data: { username: string; password: string }) => {
     throw error;
   }
 };
+export const signout = async () => {
+  const cook = await cookies();
+  try {
+    const response = await axios.post(`${API_BASE_URL}/user/logout?token=${cook.get("token")}`);
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+    cook.delete("token"); // Assuming the token is stored in cookies, you can delete it
+    return { success: true }; // Assuming a successful logout returns success
+  } catch (error) {
+    console.error("Error during logout:", error);
+    throw error; 
+  }
+};
 
 export const getRoles = async () => {
   try {
@@ -58,3 +72,6 @@ export const getRoles = async () => {
     throw error;
   }
 };
+
+
+
