@@ -18,6 +18,7 @@ import { z } from "zod";
 import { signUpSchema } from "../AuthSchema";
 import { signUp } from "@/api/api";
 import { useMutation } from "@tanstack/react-query";
+import Link from "next/link";
 
 const SignUp = () => {
 
@@ -105,6 +106,15 @@ const SignUp = () => {
 
         {/* Submit Button */}
         <Button type="submit">Submit</Button>
+
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+        Already have an account?
+        <Link href="/auth/sign-in">
+          <Button variant="link" className="font-medium text-primary underline hover:text-primary-dark">
+            Sign up here
+          </Button >
+        </Link>
+      </p>
       </form>
     </Form>
   );

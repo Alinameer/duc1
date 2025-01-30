@@ -3,15 +3,24 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import React from "react";
 import Cookies from 'js-cookie';
-import { signout } from "@/api/api";
+import { useRouter } from "next/navigation"; // Correct import for Next.js 13+
 
 const LogoutButton: React.FC = () => {
+  const router = useRouter();
   const token = Cookies.get("token");
+  
   const { mutate, status } = useMutation({
-    mutationFn: signout,
+    mutationFn: () => axios.post(`http://192.168.0.148:8000/api/user/logout?refresh_token=${token}`),
     onSuccess: () => {
       // On successful logout, remove the token from cookies
-      Cookies.remove("token");  // Assuming your token is stored in a cookie named "token"
+      Cookies.remove("token");
+      router.push("/auth/sign-in"); // Redirect to sign-in page
+    },
+    onError: (error) => {
+      if (error?.response?.data?.message === "Token does not exist or is already revoked") {
+        Cookies.remove("token");
+        router.push("/auth/sign-in");
+      }
     },
   });
 
@@ -26,7 +35,7 @@ const LogoutButton: React.FC = () => {
       onClick={handleLogout}
       className="hover:bg-red-500 text-white font-bold py-2 px-4 rounded"
     >
-      Logout 
+      Logout
     </button>
   );
 };

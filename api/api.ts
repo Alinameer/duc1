@@ -43,13 +43,15 @@ export const signUp = async (data: { username: string; password: string }) => {
 };
 export const signout = async () => {
   const cook = await cookies();
+  console.log(cook.get("token").value);
+  
   try {
-    const response = await axios.post(`${API_BASE_URL}/user/logout?token=${cook.get("token")}`);
+    const response = await axios.post(`${API_BASE_URL}/user/logout?refresh_token=${cook.get("token").value}`);
     if (response.status !== 200) {
       return { success: false, message: response.data.message };
     }
-    cook.delete("token"); // Assuming the token is stored in cookies, you can delete it
-    return { success: true }; // Assuming a successful logout returns success
+    cook.delete("token"); 
+    return { success: true }; 
   } catch (error) {
     console.error("Error during logout:", error);
     throw error; 
@@ -74,4 +76,21 @@ export const getRoles = async () => {
 };
 
 
-
+export const getAllUsers = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/user/get_all`);
+    return response.data; 
+  } catch (error) {
+    console.error("Error fetching document:", error);
+    throw error; 
+  }
+};
+export const rolePermission = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/rolepermission/get_all`);
+    return response.data; 
+  } catch (error) {
+    console.error("Error fetching document:", error);
+    throw error; 
+  }
+};

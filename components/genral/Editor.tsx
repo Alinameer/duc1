@@ -223,7 +223,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
   }
 
   if (isError) {
-    return <div>Error loading document.</div>;
+    return <div>Error loading document.</div>
   }
 
   return (
@@ -238,7 +238,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
         <Editor
           ref={editorRef}
           height="800px"
-          initialValue={data?.content || ""}
+          initialValue={data?.content  || ""}
           initialEditType="wysiwyg"
           previewStyle="vertical"
           plugins={plugins} // Passing the dynamically loaded plugins

@@ -22,4 +22,3 @@ export function hasPermission(
         return role && ROLES[role]?.includes(permission);
       });
 } 
-

@@ -20,7 +20,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.statically.io/gh/TORCH-Corp/SF-PRO-FONT/main/font/fonts.css"
+        />
+        <link
+          rel="preload"
+          href="https://cdn.statically.io/gh/TORCH-Corp/SF-PRO-FONT/main/font/SF-Pro.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className={inter.className}>
+        
         <div
           className={
             "mx-auto w-full bg-background border-border/40 dark:border-border min-[1800px]:max-w-[1536px] min-[1800px]:border-x flex justify-center items-center overflow-hidden relative"
@@ -39,9 +53,9 @@ export default function RootLayout({
           "
             >
               <QueryProvider>
-              <Header />
-
-                {children}</QueryProvider>
+                <Header />
+                {children}
+              </QueryProvider>
             </main>
           </SidebarProvider>
         </div>
