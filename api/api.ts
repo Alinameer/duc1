@@ -94,3 +94,28 @@ export const rolePermission = async () => {
     throw error; 
   }
 };
+export const getCategory = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/category/get-all`);
+    return response.data; 
+  } catch (error) {
+    console.error("Error fetching document:", error);
+    throw error; 
+  }
+};
+
+
+export const createCategory = async (data: { name: string; cate_parent: string }) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}category/create-category`, data);
+
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during category creation:", error);
+    return { success: false, message: error.response?.data?.message || "An error occurred" };
+  }
+};

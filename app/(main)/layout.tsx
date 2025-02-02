@@ -40,6 +40,7 @@ export default function RootLayout({
             "mx-auto w-full bg-background border-border/40 dark:border-border min-[1800px]:max-w-[1536px] min-[1800px]:border-x flex justify-center items-center overflow-hidden relative"
           }
         >
+            <QueryProvider>
           <SidebarProvider>
             <AppSidebar />
 
@@ -52,12 +53,11 @@ export default function RootLayout({
           group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border
           "
             >
-              <QueryProvider>
                 <Header />
                 {children}
-              </QueryProvider>
             </main>
           </SidebarProvider>
+              </QueryProvider>
         </div>
       </body>
     </html>

@@ -1,11 +1,49 @@
 "use client";
+import { ReactNode, useState, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+
 import {
   ContextMenu,
   ContextMenuTrigger,
   ContextMenuContent,
   ContextMenuItem,
 } from "@/components/ui/context-menu";
-import { ReactNode, useState, useRef } from "react";
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
+  ChevronDown,
+  ChevronRight,
+  ClipboardPaste,
+  Copy,
+  Edit,
+  FilePlus2,
+  FolderPlus,
+  Trash,
+} from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@radix-ui/react-collapsible";
+
+import { getCategory } from "@/api/api";
+import SearchComponent from "@/components/genral/Search";
 
 interface MenuItem {
   label: string;
@@ -37,41 +75,13 @@ export function ReusableContextMenu({
   );
 }
 
-import {
-  Sidebar,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  ChevronRight,
-  ClipboardPaste,
-  Copy,
-  Delete,
-  DeleteIcon,
-  Edit,
-  FilePlus2,
-  FolderPlus,
-  Trash,
-} from "lucide-react";
-import Link from "next/link";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@radix-ui/react-collapsible";
+// Types for your category data
+interface Category {
+  id: string;
+  name: string;
+  cate_parent: string | null;
+  subcategories: Category[];
+}
 
 const routes = [
   { label: "Frontend", path: "/frontend" },
@@ -81,7 +91,73 @@ const routes = [
   { label: "Finance", path: "/finance" },
 ];
 
+// Context menu items that will be applied to categories and folders
+const contextMenuItems: MenuItem[] = [
+  {
+    label: "Rename",
+    icon: <span className="w-4 h-4">{<Edit />}</span>,
+    onClick: () => alert("Rename clicked"),
+  },
+  {
+    label: "Delete",
+    icon: <span>{<Trash />}</span>,
+    onClick: () => alert("Delete clicked"),
+  },
+  {
+    label: "Cut",
+    icon: <span>{<Copy />}</span>,
+    onClick: () => alert("Cut clicked"),
+  },
+  {
+    label: "Paste",
+    icon: <span>{<ClipboardPaste />}</span>,
+    onClick: () => alert("Paste clicked"),
+  },
+];
+
+interface CategoryItemProps {
+  category: Category;
+}
+function CategoryItem({ category }: CategoryItemProps) {
+  const hasChildren =
+    category.subcategories && category.subcategories.length > 0;
+
+  if (hasChildren) {
+    return (
+      <SidebarGroup>
+        <Collapsible defaultOpen>
+          <ReusableContextMenu
+            trigger={
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton className="flex items-center">
+                    <span className="mr-2">
+                      <ChevronDown />
+                    </span>
+                    {category.name}
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+              </SidebarMenuItem>
+            }
+            items={contextMenuItems}
+          />
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {category.subcategories.map((subcat) => (
+                <CategoryItem key={subcat.id} category={subcat} />
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </Collapsible>
+      </SidebarGroup>
+    );
+  } else {
+    return <SidebarMenuSubItem>{category.name}</SidebarMenuSubItem>;
+  }
+}
+
 export function AppSidebar() {
+  // State for workspace and manual submenus
   const [selectedWorkspace, setSelectedWorkspace] =
     useState("Select Workspace");
   const [subMenus, setSubMenus] = useState<{ id: string; items: string[] }[]>(
@@ -90,8 +166,6 @@ export function AppSidebar() {
   const [selectedSubMenuId, setSelectedSubMenuId] = useState<string | null>(
     null
   );
-
-  // Use a ref to track the open/closed state of each collapsible section
   const collapsibleStates = useRef<Record<string, boolean>>({});
 
   const handleAddSubMenu = () => {
@@ -100,7 +174,7 @@ export function AppSidebar() {
       items: [],
     };
     setSubMenus([...subMenus, newSubMenu]);
-    setSelectedSubMenuId(newSubMenu.id); // Automatically select the newly created submenu
+    setSelectedSubMenuId(newSubMenu.id);
     collapsibleStates.current[newSubMenu.id] = true;
   };
 
@@ -125,34 +199,21 @@ export function AppSidebar() {
   const toggleCollapsible = (subMenuId: string) => {
     collapsibleStates.current[subMenuId] =
       !collapsibleStates.current[subMenuId];
-    setSubMenus([...subMenus]);
+    setSubMenus([...subMenus]); // Trigger a re-render
   };
 
-  const contextMenuItems: MenuItem[] = [
-    {
-      label: "Rename",
-      icon: <span className="w-4 h-4">{<Edit />}</span>,
-      onClick: () => alert("Rename clicked"),
-    },
-    {
-      label: "Delete",
-      icon: <span>{<Trash />}</span>,
-      onClick: () => alert("Delete clicked"),
-    },
-    {
-      label: "cut",
-      icon: <span>{<Copy />}</span>,
-      onClick: () => alert("Copy clicked"),
-    },
-    {
-      label: "Paste",
-      icon: <span>{<ClipboardPaste />}</span>,
-      onClick: () => alert("Paste clicked"),
-    },
-  ];
+  // Fetch categories from the API using your getCategory function
+/*   const { data: categories, isLoading, isError } = useQuery<Category[]>({
+    queryKey: ["categories"],
+    queryFn: getCategory,
+  });
 
+  if (isLoading) return <div>Loading...</div>;
+  if (isError || !categories) return <div>Error fetching categories.</div>;
+ */
   return (
     <Sidebar className="absolute">
+      <SearchComponent />
       <SidebarHeader>
         <SidebarMenu>
           {/* Workspace Selection */}
@@ -178,17 +239,17 @@ export function AppSidebar() {
             </DropdownMenu>
           </SidebarMenuItem>
 
-          {/* Add Submenu and Items */}
+          {/* Manual Submenu Controls */}
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem className="flex w-full gap-2 items-center justify-center">
                   <FolderPlus
-                    className="w-5 h-5 text-blue-500"
+                    className="w-5 h-5 text-blue-500 cursor-pointer"
                     onClick={handleAddSubMenu}
                   />
                   <FilePlus2
-                    className="w-5 h-5 text-blue-500"
+                    className="w-5 h-5 text-blue-500 cursor-pointer"
                     onClick={handleAddSubMenuItem}
                   />
                 </SidebarMenuItem>
@@ -196,13 +257,12 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Submenus */}
+          {/* Render manually added submenus */}
           {subMenus.map((subMenu) => (
             <SidebarGroup key={subMenu.id}>
               <Collapsible
                 open={collapsibleStates.current[subMenu.id] || false}
                 onOpenChange={() => toggleCollapsible(subMenu.id)}
-                className="group/collapsible"
               >
                 <ReusableContextMenu
                   trigger={
@@ -210,14 +270,11 @@ export function AppSidebar() {
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           className={`${
-                            selectedSubMenuId === subMenu.id
-                              ? "bg-blue-100"
-                              : ""
+                            selectedSubMenuId === subMenu.id ? "bg-blue-100" : ""
                           }`}
                           onClick={() => handleSelectSubMenu(subMenu.id)}
                         >
                           <span>
-                            {/* Conditional rendering based on ref state */}
                             {collapsibleStates.current[subMenu.id] ? (
                               <ChevronDown />
                             ) : (
@@ -243,6 +300,27 @@ export function AppSidebar() {
               </Collapsible>
             </SidebarGroup>
           ))}
+
+          {/* Render Categories recursively from your API data */}
+{/*           <SidebarGroup>
+            <Collapsible defaultOpen>
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton className="flex items-center">
+                    <ChevronDown className="mr-2" />
+                    Categories
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+              </SidebarMenuItem>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {categories.map((category) => (
+                    <CategoryItem key={category.id} category={category} />
+                  ))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </Collapsible>
+          </SidebarGroup> */}
         </SidebarMenu>
       </SidebarHeader>
     </Sidebar>

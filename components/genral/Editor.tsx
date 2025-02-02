@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getDocument } from "@/api/api";
+import { getDocument, rolePermission } from "@/api/api";
 import { hasPermission, Role } from "@/lib/auth";
 /* import Prism from "prismjs";
 import "prismjs/themes/prism.css"; // Default Prism.js theme (optional, but recommended)
@@ -25,7 +25,6 @@ import "prismjs/components/prism-json"; // JSON syntax highlighting
 
 const Editor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), { ssr: false });
 
-// Types
 interface DropdownState {
   visible: boolean;
   position: { top: number; left: number };
@@ -217,7 +216,12 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
     }
     dispatchDropdown({ type: "CLOSE" });
   };
-
+ const {data:permission} = useQuery({
+  queryKey: ["rolePermission"],
+  queryFn: rolePermission,
+ })
+ console.log(permission,"ddd");
+ 
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -238,10 +242,10 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
         <Editor
           ref={editorRef}
           height="800px"
-          initialValue={data?.content  || ""}
+          initialValue={data?.content  || "hey hey  "}
           initialEditType="wysiwyg"
           previewStyle="vertical"
-          plugins={plugins} // Passing the dynamically loaded plugins
+          plugins={plugins} 
         />
       </div>
 
@@ -249,7 +253,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
         Save
       </button>
 
-      {hasPermission(user, 'view') && (
+      {hasPermission(permission?.[0], "Edit Category") && (
         <button className="mt-4 p-2 bg-green-500 text-white rounded ml-2">
           Edit
         </button>
