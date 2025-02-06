@@ -75,12 +75,18 @@ export function ReusableContextMenu({
   );
 }
 
-// Types for your category data
+interface Document {
+  id: string;
+  title: string;
+  content: string;
+}
+
 interface Category {
   id: string;
   name: string;
   cate_parent: string | null;
   subcategories: Category[];
+  documents: Document[];
 }
 
 const routes = [
@@ -91,7 +97,6 @@ const routes = [
   { label: "Finance", path: "/finance" },
 ];
 
-// Context menu items that will be applied to categories and folders
 const contextMenuItems: MenuItem[] = [
   {
     label: "Rename",
@@ -118,54 +123,57 @@ const contextMenuItems: MenuItem[] = [
 interface CategoryItemProps {
   category: Category;
 }
+
 function CategoryItem({ category }: CategoryItemProps) {
   const hasChildren =
     category.subcategories && category.subcategories.length > 0;
+  const hasDocuments = category.documents && category.documents.length > 0;
 
-  if (hasChildren) {
-    return (
-      <SidebarGroup>
-        <Collapsible defaultOpen>
-          <ReusableContextMenu
-            trigger={
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton className="flex items-center">
-                    <span className="mr-2">
-                      <ChevronDown />
-                    </span>
-                    {category.name}
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-              </SidebarMenuItem>
-            }
-            items={contextMenuItems}
-          />
-          <CollapsibleContent>
-            <SidebarMenuSub>
-              {category.subcategories.map((subcat) => (
+  return (
+    <SidebarGroup>
+      <Collapsible defaultOpen>
+        <ReusableContextMenu
+          trigger={
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton className="flex items-center">
+                  <span className="mr-2">
+                    {hasChildren ? <ChevronDown /> : <ChevronRight />}
+                  </span>
+                  {category.name}
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+            </SidebarMenuItem>
+          }
+          items={contextMenuItems}
+        />
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {hasChildren &&
+              category.subcategories.map((subcat) => (
                 <CategoryItem key={subcat.id} category={subcat} />
               ))}
-            </SidebarMenuSub>
-          </CollapsibleContent>
-        </Collapsible>
-      </SidebarGroup>
-    );
-  } else {
-    return <SidebarMenuSubItem>{category.name}</SidebarMenuSubItem>;
-  }
+            {hasDocuments &&
+              category.documents.map((doc) => (
+                <SidebarMenuSubItem key={doc.id}>
+                  <Link href={`/${doc.id}`}>
+                    <div>{doc.title}</div>
+                  </Link>
+                </SidebarMenuSubItem>
+              ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </Collapsible>
+    </SidebarGroup>
+  );
 }
 
 export function AppSidebar() {
   // State for workspace and manual submenus
   const [selectedWorkspace, setSelectedWorkspace] =
     useState("Select Workspace");
-  const [subMenus, setSubMenus] = useState<{ id: string; items: string[] }[]>(
-    []
-  );
-  const [selectedSubMenuId, setSelectedSubMenuId] = useState<string | null>(
-    null
-  );
+  const [subMenus, setSubMenus] = useState<{ id: string; items: string[] }[]>([]);
+  const [selectedSubMenuId, setSelectedSubMenuId] = useState<string | null>(null);
   const collapsibleStates = useRef<Record<string, boolean>>({});
 
   const handleAddSubMenu = () => {
@@ -185,7 +193,10 @@ export function AppSidebar() {
         subMenu.id === selectedSubMenuId
           ? {
               ...subMenu,
-              items: [...subMenu.items, `Document-${subMenu.items.length + 1}`],
+              items: [
+                ...subMenu.items,
+                `Document-${subMenu.items.length + 1}`,
+              ],
             }
           : subMenu
       )
@@ -203,20 +214,24 @@ export function AppSidebar() {
   };
 
   // Fetch categories from the API using your getCategory function
-/*   const { data: categories, isLoading, isError } = useQuery<Category[]>({
-    queryKey: ["categories"],
+  const {
+    data: categories,
+    isLoading,
+    isError,
+  } = useQuery<Category[]>({
+    queryKey: ["c"],
     queryFn: getCategory,
   });
 
   if (isLoading) return <div>Loading...</div>;
   if (isError || !categories) return <div>Error fetching categories.</div>;
- */
+
   return (
     <Sidebar className="absolute">
       <SearchComponent />
       <SidebarHeader>
         <SidebarMenu>
-          {/* Workspace Selection */}
+          {/* Workspace Selection (currently commented out)
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -238,8 +253,9 @@ export function AppSidebar() {
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
+          */}
 
-          {/* Manual Submenu Controls */}
+          {/* Manual Submenu Controls (currently commented out)
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -256,8 +272,9 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          
 
-          {/* Render manually added submenus */}
+          {/* Render manually added submenus (currently commented out)
           {subMenus.map((subMenu) => (
             <SidebarGroup key={subMenu.id}>
               <Collapsible
@@ -300,18 +317,11 @@ export function AppSidebar() {
               </Collapsible>
             </SidebarGroup>
           ))}
+          */}
 
           {/* Render Categories recursively from your API data */}
-{/*           <SidebarGroup>
+          <SidebarGroup>
             <Collapsible defaultOpen>
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton className="flex items-center">
-                    <ChevronDown className="mr-2" />
-                    Categories
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-              </SidebarMenuItem>
               <CollapsibleContent>
                 <SidebarMenuSub>
                   {categories.map((category) => (
@@ -320,7 +330,7 @@ export function AppSidebar() {
                 </SidebarMenuSub>
               </CollapsibleContent>
             </Collapsible>
-          </SidebarGroup> */}
+          </SidebarGroup>
         </SidebarMenu>
       </SidebarHeader>
     </Sidebar>

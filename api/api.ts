@@ -3,10 +3,10 @@ import axios from "axios";
 import { cookies } from "next/headers";
 
 const API_BASE_URL = "http://192.168.0.148:8000/api";
-export const getDocument = async () => {
+export const getDocument = async (docId: string) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/document/get`);
-    return response.data; // Return the data from the API
+    const response = await axios.get(`${API_BASE_URL}/document/get/${docId}`);
+    return response.data; 
   } catch (error) {
     console.error("Error fetching document:", error);
     throw error; 
@@ -96,7 +96,7 @@ export const rolePermission = async () => {
 };
 export const getCategory = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/category/get-all`);
+    const response = await axios.get(`${API_BASE_URL}/category/get-category`);
     return response.data; 
   } catch (error) {
     console.error("Error fetching document:", error);
@@ -117,5 +117,42 @@ export const createCategory = async (data: { name: string; cate_parent: string }
   } catch (error: any) {
     console.error("Error during category creation:", error);
     return { success: false, message: error.response?.data?.message || "An error occurred" };
+  }
+};
+
+
+export const searchDocuments = async (query: string) => {
+  if (!query) return [];
+  try {
+    const response = await axios.get(`${API_BASE_URL}/document/search`, {
+      params: { q: query },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error searching documents:", error);
+    throw error;
+  }
+};
+
+
+export const updateDocument = async (data: { id: string; title?: string; content?: string }) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/document/update-doc`,
+     data 
+    );
+    console.log(response);
+    
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during document update:", error);
+    return { 
+      success: false, 
+      message: error.response?.data?.message || "An error occurred" 
+    };
   }
 };

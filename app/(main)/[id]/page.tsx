@@ -1,17 +1,6 @@
-"use client";
-import MyEditor from "@/components/genral/Editor";
-import { getRoles } from "@/api/api";
-import { useQuery } from "@tanstack/react-query";
+  import WrapperEditer from "./WrapperEditer";
 
-export default function Home() {
-  const { data } = useQuery({
-    queryKey: ["roles"],
-    queryFn: getRoles,
-  });
-
-  return (
-    <div>
-      <MyEditor user={data} />
-    </div>
-  );
-}
+  export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+   const id = (await params).id
+    return <WrapperEditer docId={id} />;
+  }

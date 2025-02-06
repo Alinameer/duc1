@@ -1,8 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useReducer, useState } from "react";
 import dynamic from "next/dynamic";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import {
   DropdownMenu,
@@ -10,20 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getDocument, rolePermission } from "@/api/api";
-import { hasPermission, Role } from "@/lib/auth";
-/* import Prism from "prismjs";
-import "prismjs/themes/prism.css"; // Default Prism.js theme (optional, but recommended)
-import "prismjs/components/prism-javascript"; // JavaScript syntax highlighting
-import "prismjs/components/prism-python"; // Python syntax highlighting
-import "prismjs/components/prism-css"; // CSS syntax highlighting
-import "prismjs/components/prism-typescript"; // TypeScript syntax highlighting
-import "prismjs/components/prism-bash"; // Bash syntax highlighting
-import "prismjs/components/prism-json"; // JSON syntax highlighting
- */
+import { getDocument, rolePermission, updateDocument } from "@/api/api";
+import { useDocumentTitle } from "@/hooks/DocumentTitleContext";
 
-
-const Editor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), { ssr: false });
+const Editor = dynamic(
+  () => import("@toast-ui/react-editor").then((mod) => mod.Editor),
+  { ssr: false }
+);
 
 interface DropdownState {
   visible: boolean;
@@ -32,17 +24,28 @@ interface DropdownState {
 }
 
 type DropdownAction =
-  | { type: "OPEN"; payload: { position: { top: number; left: number }; items: string[] } }
+  | {
+      type: "OPEN";
+      payload: { position: { top: number; left: number }; items: string[] };
+    }
   | { type: "CLOSE" };
 
 interface MyEditorProps {
   user: { id: string; role?: Role };
+  docId: string;
 }
 
-const dropdownReducer = (state: DropdownState, action: DropdownAction): DropdownState => {
+const dropdownReducer = (
+  state: DropdownState,
+  action: DropdownAction
+): DropdownState => {
   switch (action.type) {
     case "OPEN":
-      return { visible: true, position: action.payload.position, items: action.payload.items };
+      return {
+        visible: true,
+        position: action.payload.position,
+        items: action.payload.items,
+      };
     case "CLOSE":
       return { ...state, visible: false };
     default:
@@ -50,9 +53,10 @@ const dropdownReducer = (state: DropdownState, action: DropdownAction): Dropdown
   }
 };
 
-const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
-  const editorRef = useRef<any>(null); // ToastUI editor instance
+const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
+  const editorRef = useRef<any>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
+  const { setTitle } = useDocumentTitle(); 
 
   const [dropdownState, dispatchDropdown] = useReducer(dropdownReducer, {
     visible: false,
@@ -60,40 +64,36 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
     items: [],
   });
 
-  const { mutate } = useMutation({
-    mutationFn: (data: string) =>
-      axios.post("http://192.168.0.148:8000/api/document/create-doc", { title: "test", content: data }),
-  });
-
   const [plugins, setPlugins] = useState<any[]>([]);
 
   useEffect(() => {
     const loadPlugins = async () => {
-      // Dynamically import Prism.js in the useEffect hook (only client-side)
       const { default: Prism } = await import("prismjs");
-      
-      
-      // Dynamically import Toast UI editor plugins
-      const [
-        codeSyntaxHighlight,
-        colorSyntax,
-        tableMergedCell,
-        uml,
-        chart
-      ] = await Promise.all([
-        import('@toast-ui/editor-plugin-code-syntax-highlight').then((mod) => mod.default),
-        import('@toast-ui/editor-plugin-color-syntax').then((mod) => mod.default),
-        import('@toast-ui/editor-plugin-table-merged-cell').then((mod) => mod.default),
-        import('@toast-ui/editor-plugin-uml').then((mod) => mod.default),
-        import('@toast-ui/editor-plugin-chart').then((mod) => mod.default),
-      ]);
+
+      const [codeSyntaxHighlight, colorSyntax, tableMergedCell, uml, chart] =
+        await Promise.all([
+          import("@toast-ui/editor-plugin-code-syntax-highlight").then(
+            (mod) => mod.default
+          ),
+          import("@toast-ui/editor-plugin-color-syntax").then(
+            (mod) => mod.default
+          ),
+          import("@toast-ui/editor-plugin-table-merged-cell").then(
+            (mod) => mod.default
+          ),
+          import("@toast-ui/editor-plugin-uml").then((mod) => mod.default),
+          import("@toast-ui/editor-plugin-chart").then((mod) => mod.default),
+        ]);
 
       setPlugins([
-        [chart, { minWidth: 100, maxWidth: 600, minHeight: 100, maxHeight: 300 }],
+        [
+          chart,
+          { minWidth: 100, maxWidth: 600, minHeight: 100, maxHeight: 300 },
+        ],
         [codeSyntaxHighlight, { highlighter: Prism }],
         colorSyntax,
         tableMergedCell,
-        uml
+        uml,
       ]);
     };
 
@@ -101,20 +101,35 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
   }, []);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["documents"],
-    queryFn: getDocument,
+    queryKey: ["documents", docId],
+    queryFn: () => getDocument(docId),
   });
 
   useEffect(() => {
-    if (data && editorRef.current) {
-      editorRef.current.getInstance().setMarkdown(data.content || "");
+    if (data && data[0]?.title) {
+      setTitle(data[0].title);
     }
-  }, [data]);
+  }, [data, setTitle]);
+
+  const queryClient = useQueryClient();
+  const { mutate: updateDoc } = useMutation({
+    mutationFn: updateDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["c"] });
+      queryClient.invalidateQueries({ queryKey: ["documents", docId] });
+    },
+    onError: (error: any) => {
+      console.error("Error during document update:", error);
+    },
+  });
 
   const handleSave = () => {
     if (editorRef.current) {
       const markdown = editorRef.current.getInstance().getMarkdown();
-      mutate(markdown);
+      updateDoc({
+        id: docId,
+        content: markdown,
+      });
       localStorage.setItem("markdown", markdown);
     }
   };
@@ -126,29 +141,36 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
       const editorInstance = editorRef.current?.getInstance();
       if (!editorInstance || !editorContainerRef.current) return;
 
-      // Get the editor's DOM element
       const editorElement = editorInstance.getEditorElements().mdEditor;
-
-      // Get the cursor's position within the editor
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
 
-      // Calculate the position relative to the editor container
       const editorRect = editorContainerRef.current.getBoundingClientRect();
       const isCursorAtStart = rect.top === 0 && rect.left === 0;
       const top = isCursorAtStart
         ? editorElement.scrollTop
         : rect.top - editorRect.top + editorElement.scrollTop;
-      const left = isCursorAtStart
-        ? 0 
-        : rect.left - editorRect.left;
+      const left = isCursorAtStart ? 0 : rect.left - editorRect.left;
 
       const dropdownItems = [
-        "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6",
-        "bold", "italic", "strike", "hr", "ul", "ol", "task", "code", "codeblock",
+        "Heading 1",
+        "Heading 2",
+        "Heading 3",
+        "Heading 4",
+        "Heading 5",
+        "Heading 6",
+        "bold",
+        "italic",
+        "strike",
+        "hr",
+        "ul",
+        "ol",
+        "task",
+        "code",
+        "codeblock",
       ];
 
       dispatchDropdown({
@@ -216,18 +238,18 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
     }
     dispatchDropdown({ type: "CLOSE" });
   };
- const {data:permission} = useQuery({
-  queryKey: ["rolePermission"],
-  queryFn: rolePermission,
- })
- console.log(permission,"ddd");
- 
+
+  /*   const { data: permission } = useQuery({
+    queryKey: ["rolePermission"],
+    queryFn: rolePermission,
+  });
+ */
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   if (isError) {
-    return <div>Error loading document.</div>
+    return <div>Error loading document.</div>;
   }
 
   return (
@@ -242,22 +264,25 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
         <Editor
           ref={editorRef}
           height="800px"
-          initialValue={data?.content  || "hey hey  "}
+          initialValue={data[0].content || "write your content here..."}
           initialEditType="wysiwyg"
           previewStyle="vertical"
-          plugins={plugins} 
+          plugins={plugins}
         />
       </div>
 
-      <button onClick={handleSave} className="mt-4 p-2 bg-blue-500 text-white rounded">
+      <button
+        onClick={handleSave}
+        className="mt-4 p-2 bg-blue-500 text-white rounded"
+      >
         Save
       </button>
-
+      {/* 
       {hasPermission(permission?.[0], "Edit Category") && (
         <button className="mt-4 p-2 bg-green-500 text-white rounded ml-2">
           Edit
         </button>
-      )}
+      )} */}
 
       {dropdownState.visible && (
         <div
@@ -268,13 +293,19 @@ const MyEditor: React.FC<MyEditorProps> = ({ user }) => {
             zIndex: 1000,
           }}
         >
-          <DropdownMenu open={dropdownState.visible} onOpenChange={() => dispatchDropdown({ type: "CLOSE" })}>
+          <DropdownMenu
+            open={dropdownState.visible}
+            onOpenChange={() => dispatchDropdown({ type: "CLOSE" })}
+          >
             <DropdownMenuTrigger asChild>
               <div />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white border rounded shadow-lg w-40">
               {dropdownState.items.map((item) => (
-                <DropdownMenuItem key={item} onClick={() => handleDropdownSelect(item)}>
+                <DropdownMenuItem
+                  key={item}
+                  onClick={() => handleDropdownSelect(item)}
+                >
                   {item}
                 </DropdownMenuItem>
               ))}
