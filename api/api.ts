@@ -216,9 +216,9 @@ export const createCategory = async (data: { name: string; cate_parent?: string 
   }
 };
 
-export const createDocument = async (data: { name: string; cate_parent: string }) => {
+export const createDocument = async (data: { content: string; title: string; category: string }) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/category/create-category`, data);
+    const response = await axios.post(`${API_BASE_URL}/document/create-doc`, data);
 
     if (response.status !== 200) {
       return { success: false, message: response.data.message };

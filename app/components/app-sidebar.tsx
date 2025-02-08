@@ -47,7 +47,6 @@ import {
 import { FilePlus2, FolderPlus } from "lucide-react";
 
 import SearchComponent from "@/components/genral/Search";
-import { cn } from "@/lib/utils";
 import { twMerge } from "tailwind-merge";
 
 //
@@ -258,10 +257,6 @@ function CategoryItem({
 
   const hasChildren = category.subcategories?.length > 0;
   const hasDocuments = category.documents?.length > 0;
-  console.log(category.id === setSelectId);
-  console.log(selectId, "selectId");
-  console.log(category.id);
-
   return (
     <SidebarGroup>
       <Collapsible defaultOpen>
@@ -273,13 +268,13 @@ function CategoryItem({
                   className={twMerge(
                     "flex items-center ",
                     category.id === selectId
-                      ? "bg-red-500 hover:bg-red-500 text-accent-foreground"
+                      ? "bg-gray-200 hover:bg-gray-200 text-accent-foreground"
                       : null
                   )}
-                  onClick={() => setSelectId(category.id)} // Set the category as selected
+                  onClick={() => setSelectId(category.id)} 
                 >
                   <span className="mr-2">
-                    {hasChildren ? <ChevronDown /> : <ChevronRight />}
+                    {selectId ? <ChevronDown /> : <ChevronRight />}
                   </span>
                   {category.name}
                 </SidebarMenuButton>
@@ -348,10 +343,8 @@ export function AppSidebar() {
       createCategoryMutation.mutate(categoryData);
     }
   };
-  if (isLoading) return <div>Loading...</div>;
-  if (isError || !categories) return <div>Error fetching categories.</div>;
 
-    const createDocumentMutation = useMutation({
+  const createDocumentMutation = useMutation({
     mutationFn: createDocument,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["c"] });
@@ -361,11 +354,22 @@ export function AppSidebar() {
     },
   });
 
-
+  if (isLoading) return <div>Loading...</div>;
+  if (isError || !categories) return <div>Error fetching categories.</div>;
 
   const handleAddDocument = () => {
-    alert("Add document clicked");
-  }; 
+    const newDocumentTitle = prompt("Enter new document title");
+    if (newDocumentTitle) {
+      const documentData = {
+        title: newDocumentTitle,
+        content: "",
+        category: selectId,
+      };
+        console.log(selectId,"mewo ");
+        
+      createDocumentMutation.mutate(documentData);
+    }
+  };
 
   return (
     <Sidebar className="absolute">
@@ -373,7 +377,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarGroup>
-            -{" "}
+            {" "}
             <SidebarMenuItem className="flex w-full gap-2 items-center justify-center">
               <FolderPlus
                 className="w-5 h-5 text-blue-500 cursor-pointer"
@@ -381,7 +385,7 @@ export function AppSidebar() {
               />
               <FilePlus2
                 className="w-5 h-5 text-blue-500 cursor-pointer"
-                /* onClick={handleAddDocument} */
+                onClick={handleAddDocument}
               />
             </SidebarMenuItem>
           </SidebarGroup>
