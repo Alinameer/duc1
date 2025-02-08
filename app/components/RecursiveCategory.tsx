@@ -4,9 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { getCategory } from "@/api/api";
 
-//
-// Recursive component for displaying a category and its subcategories.
-//
 const RecursiveCategory = ({
   category,
   depth = 0,

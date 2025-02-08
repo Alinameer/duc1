@@ -26,13 +26,10 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 
-// Define the File interface
 interface File {
   id: string;
   name: string;
 }
-
-// Define the Folder interface
 interface Folder {
   id: string;
   name: string;

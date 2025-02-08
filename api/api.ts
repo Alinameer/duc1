@@ -104,23 +104,6 @@ export const getCategory = async () => {
   }
 };
 
-
-export const createCategory = async (data: { name: string; cate_parent: string }) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}category/create-category`, data);
-
-    if (response.status !== 200) {
-      return { success: false, message: response.data.message };
-    }
-
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    console.error("Error during category creation:", error);
-    return { success: false, message: error.response?.data?.message || "An error occurred" };
-  }
-};
-
-
 export const searchDocuments = async (query: string) => {
   if (!query) return [];
   try {
@@ -154,5 +137,96 @@ export const updateDocument = async (data: { id: string; title?: string; content
       success: false, 
       message: error.response?.data?.message || "An error occurred" 
     };
+  }
+};
+export const updateCategory = async (data: { id: string; title?: string; name?: string }) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/category/update_category`,
+     data 
+    );
+    console.log(response);
+    
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during document update:", error);
+    return { 
+      success: false, 
+      message: error.response?.data?.message || "An error occurred" 
+    };
+  }
+};
+export const deleteCategory = async (data: { id: string; }) => {
+  try {
+    const response = await axios.delete(
+      `${API_BASE_URL}/category/delete_category/${data.id}`, 
+    );
+    console.log(response);
+    
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during document update:", error);
+    return { 
+      success: false, 
+      message: error.response?.data?.message || "An error occurred" 
+    };
+  }
+};
+export const deleteDocument = async (data: { id: string; }) => {
+  try {
+    const response = await axios.delete(
+      `${API_BASE_URL}/document/delete_document/${data.id}`,
+    );
+    
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during document update:", error);
+    return { 
+      success: false, 
+      message: error.response?.data?.message || "An error occurred" 
+    };
+  }
+};
+
+
+export const createCategory = async (data: { name: string; cate_parent?: string }) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/category/create-category`, data);
+
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during category creation:", error);
+    return { success: false, message: error.response?.data?.message || "An error occurred" };
+  }
+};
+
+export const createDocument = async (data: { name: string; cate_parent: string }) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/category/create-category`, data);
+
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during category creation:", error);
+    return { success: false, message: error.response?.data?.message || "An error occurred" };
   }
 };

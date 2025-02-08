@@ -17,3 +17,4 @@ export default function WrapperEditer({ docId }: { docId: string }) {
     </div>
   );
 }
+

@@ -1,6 +1,7 @@
 "use client";
-import { ReactNode, useState, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+
+import { ReactNode, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 import {
@@ -16,24 +17,15 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import {
   ChevronDown,
   ChevronRight,
   ClipboardPaste,
   Copy,
   Edit,
-  FilePlus2,
-  FolderPlus,
   Trash,
 } from "lucide-react";
 import {
@@ -42,9 +34,25 @@ import {
   CollapsibleTrigger,
 } from "@radix-ui/react-collapsible";
 
-import { getCategory } from "@/api/api";
-import SearchComponent from "@/components/genral/Search";
+import {
+  getCategory,
+  updateDocument,
+  updateCategory,
+  deleteCategory,
+  deleteDocument,
+  createCategory,
+  createDocument,
+} from "@/api/api";
 
+import { FilePlus2, FolderPlus } from "lucide-react";
+
+import SearchComponent from "@/components/genral/Search";
+import { cn } from "@/lib/utils";
+import { twMerge } from "tailwind-merge";
+
+//
+// Interfaces
+//
 interface MenuItem {
   label: string;
   icon?: ReactNode;
@@ -56,13 +64,30 @@ interface ReusableContextMenuProps {
   items: MenuItem[];
 }
 
+export interface Document {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  cate_parent: string | null;
+  subcategories: Category[];
+  documents: Document[];
+}
+
+//
+// Reusable Context Menu Component
+//
 export function ReusableContextMenu({
   trigger,
   items,
 }: ReusableContextMenuProps) {
   return (
     <ContextMenu>
-      <ContextMenuTrigger>{trigger}</ContextMenuTrigger>
+      <ContextMenuTrigger> {trigger}</ContextMenuTrigger>
       <ContextMenuContent className="bg-background border border-gray-200 rounded-lg shadow-lg">
         {items.map((item, index) => (
           <ContextMenuItem key={index} onClick={item.onClick}>
@@ -75,59 +100,167 @@ export function ReusableContextMenu({
   );
 }
 
-interface Document {
-  id: string;
-  title: string;
-  content: string;
+function DocumentItem({ doc }: { doc: Document }) {
+  const queryClient = useQueryClient();
+
+  const { mutate: updateDoc } = useMutation({
+    mutationFn: updateDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["c"] });
+    },
+    onError: (error: any) => {
+      console.error("Error during document update:", error);
+    },
+  });
+
+  const { mutate: deleteDoc } = useMutation({
+    mutationFn: deleteDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["c"] });
+    },
+    onError: (error: any) => {
+      console.error("Error during document deletion:", error);
+    },
+  });
+
+  const handleRename = () => {
+    const newTitle = prompt("Enter new title", doc.title);
+    if (newTitle && newTitle !== doc.title) {
+      updateDoc({
+        id: doc.id,
+        title: newTitle,
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    if (confirm(`Are you sure you want to delete document "${doc.title}"?`)) {
+      deleteDoc({ id: doc.id });
+    }
+  };
+
+  const contextMenuItems: MenuItem[] = [
+    {
+      label: "Rename",
+      icon: (
+        <span className="w-4 h-4">
+          <Edit />
+        </span>
+      ),
+      onClick: handleRename,
+    },
+    {
+      label: "Delete",
+      icon: <Trash />,
+      onClick: handleDelete,
+    },
+    {
+      label: "Cut",
+      icon: <Copy />,
+      onClick: () => alert("Cut clicked"),
+    },
+    {
+      label: "Paste",
+      icon: <ClipboardPaste />,
+      onClick: () => alert("Paste clicked"),
+    },
+  ];
+
+  return (
+    <ReusableContextMenu
+      trigger={
+        <SidebarMenuSubItem>
+          <Link href={`/${doc.id}`}>
+            <div>{doc.title}</div>
+          </Link>
+        </SidebarMenuSubItem>
+      }
+      items={contextMenuItems}
+    />
+  );
 }
 
-interface Category {
-  id: string;
-  name: string;
-  cate_parent: string | null;
-  subcategories: Category[];
-  documents: Document[];
-}
-
-const routes = [
-  { label: "Frontend", path: "/frontend" },
-  { label: "Backend", path: "/backend" },
-  { label: "API", path: "/api" },
-  { label: "Server", path: "/server" },
-  { label: "Finance", path: "/finance" },
-];
-
-const contextMenuItems: MenuItem[] = [
-  {
-    label: "Rename",
-    icon: <span className="w-4 h-4">{<Edit />}</span>,
-    onClick: () => alert("Rename clicked"),
-  },
-  {
-    label: "Delete",
-    icon: <span>{<Trash />}</span>,
-    onClick: () => alert("Delete clicked"),
-  },
-  {
-    label: "Cut",
-    icon: <span>{<Copy />}</span>,
-    onClick: () => alert("Cut clicked"),
-  },
-  {
-    label: "Paste",
-    icon: <span>{<ClipboardPaste />}</span>,
-    onClick: () => alert("Paste clicked"),
-  },
-];
-
-interface CategoryItemProps {
+//
+// CategoryItem Component (renders recursively)
+//
+function CategoryItem({
+  category,
+  setSelectId,
+  selectId,
+}: {
   category: Category;
-}
+  setSelectId: any;
+  selectId: any;
+}) {
+  const queryClient = useQueryClient();
 
-function CategoryItem({ category }: CategoryItemProps) {
-  const hasChildren =
-    category.subcategories && category.subcategories.length > 0;
-  const hasDocuments = category.documents && category.documents.length > 0;
+  const { mutate: updateCat } = useMutation({
+    mutationFn: updateCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["c"] });
+    },
+    onError: (error: any) => {
+      console.error("Error during category update:", error);
+    },
+  });
+
+  const { mutate: deleteCat } = useMutation({
+    mutationFn: deleteCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["c"] });
+    },
+    onError: (error: any) => {
+      console.error("Error during category deletion:", error);
+    },
+  });
+
+  const handleRename = () => {
+    const newName = prompt("Enter new category name", category.name);
+    if (newName && newName !== category.name) {
+      updateCat({ id: category.id, name: newName });
+    }
+  };
+
+  const handleDelete = () => {
+    if (
+      confirm(`Are you sure you want to delete category "${category.name}"?`)
+    ) {
+      deleteCat({ id: category.id });
+    }
+  };
+
+  const contextMenuItems: MenuItem[] = [
+    {
+      label: "Rename",
+      icon: (
+        <span className="w-4 h-4">
+          <Edit />
+        </span>
+      ),
+      onClick: handleRename,
+    },
+    {
+      label: "Delete",
+      icon: <Trash />,
+      onClick: handleDelete,
+    },
+    {
+      label: "Cut",
+      icon: <Copy />,
+      onClick: () => alert("Cut clicked"),
+    },
+    {
+      label: "Paste",
+      icon: <ClipboardPaste />,
+      onClick: () => alert("Paste clicked"),
+    },
+  ];
+
+  const hasChildren = category.subcategories?.length > 0;
+  const hasDocuments = category.documents?.length > 0;
+  console.log(category.id === setSelectId);
+  console.log(selectId, "selectId");
+  console.log(category.id);
 
   return (
     <SidebarGroup>
@@ -136,7 +269,15 @@ function CategoryItem({ category }: CategoryItemProps) {
           trigger={
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton className="flex items-center">
+                <SidebarMenuButton
+                  className={twMerge(
+                    "flex items-center ",
+                    category.id === selectId
+                      ? "bg-red-500 hover:bg-red-500 text-accent-foreground"
+                      : null
+                  )}
+                  onClick={() => setSelectId(category.id)} // Set the category as selected
+                >
                   <span className="mr-2">
                     {hasChildren ? <ChevronDown /> : <ChevronRight />}
                   </span>
@@ -151,15 +292,16 @@ function CategoryItem({ category }: CategoryItemProps) {
           <SidebarMenuSub>
             {hasChildren &&
               category.subcategories.map((subcat) => (
-                <CategoryItem key={subcat.id} category={subcat} />
+                <CategoryItem
+                  key={subcat.id}
+                  category={subcat}
+                  setSelectId={setSelectId}
+                  selectId={selectId}
+                />
               ))}
             {hasDocuments &&
               category.documents.map((doc) => (
-                <SidebarMenuSubItem key={doc.id}>
-                  <Link href={`/${doc.id}`}>
-                    <div>{doc.title}</div>
-                  </Link>
-                </SidebarMenuSubItem>
+                <DocumentItem key={doc.id} doc={doc} />
               ))}
           </SidebarMenuSub>
         </CollapsibleContent>
@@ -168,52 +310,11 @@ function CategoryItem({ category }: CategoryItemProps) {
   );
 }
 
+//
+// AppSidebar Component
+//
+
 export function AppSidebar() {
-  // State for workspace and manual submenus
-  const [selectedWorkspace, setSelectedWorkspace] =
-    useState("Select Workspace");
-  const [subMenus, setSubMenus] = useState<{ id: string; items: string[] }[]>([]);
-  const [selectedSubMenuId, setSelectedSubMenuId] = useState<string | null>(null);
-  const collapsibleStates = useRef<Record<string, boolean>>({});
-
-  const handleAddSubMenu = () => {
-    const newSubMenu = {
-      id: `Folder-${subMenus.length + 1}`,
-      items: [],
-    };
-    setSubMenus([...subMenus, newSubMenu]);
-    setSelectedSubMenuId(newSubMenu.id);
-    collapsibleStates.current[newSubMenu.id] = true;
-  };
-
-  const handleAddSubMenuItem = () => {
-    if (!selectedSubMenuId) return;
-    setSubMenus((prevSubMenus) =>
-      prevSubMenus.map((subMenu) =>
-        subMenu.id === selectedSubMenuId
-          ? {
-              ...subMenu,
-              items: [
-                ...subMenu.items,
-                `Document-${subMenu.items.length + 1}`,
-              ],
-            }
-          : subMenu
-      )
-    );
-  };
-
-  const handleSelectSubMenu = (subMenuId: string) => {
-    setSelectedSubMenuId(subMenuId);
-  };
-
-  const toggleCollapsible = (subMenuId: string) => {
-    collapsibleStates.current[subMenuId] =
-      !collapsibleStates.current[subMenuId];
-    setSubMenus([...subMenus]); // Trigger a re-render
-  };
-
-  // Fetch categories from the API using your getCategory function
   const {
     data: categories,
     isLoading,
@@ -223,109 +324,79 @@ export function AppSidebar() {
     queryFn: getCategory,
   });
 
+  const queryClient = useQueryClient();
+
+  const createCategoryMutation = useMutation({
+    mutationFn: createCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["c"] });
+    },
+    onError: (error: any) => {
+      console.error("Error during category creation:", error);
+    },
+  });
+  const [selectId, setSelectId] = useState(null);
+  console.log(selectId, "dddddddddddddd");
+
+  const handleAddCategory = () => {
+    const newCategoryName = prompt("Enter new category name");
+    if (newCategoryName) {
+      const categoryData = {
+        name: newCategoryName,
+        cate_parent: selectId || null,
+      };
+      createCategoryMutation.mutate(categoryData);
+    }
+  };
   if (isLoading) return <div>Loading...</div>;
   if (isError || !categories) return <div>Error fetching categories.</div>;
+
+    const createDocumentMutation = useMutation({
+    mutationFn: createDocument,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["c"] });
+    },
+    onError: (error: any) => {
+      console.error("Error during document creation:", error);
+    },
+  });
+
+
+
+  const handleAddDocument = () => {
+    alert("Add document clicked");
+  }; 
 
   return (
     <Sidebar className="absolute">
       <SearchComponent />
       <SidebarHeader>
         <SidebarMenu>
-          {/* Workspace Selection (currently commented out)
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton className="flex items-center justify-between">
-                  <span>{selectedWorkspace}</span>
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
-                {routes.map((route) => (
-                  <DropdownMenuItem key={route.path}>
-                    <Link href={route.path}>
-                      <div onClick={() => setSelectedWorkspace(route.label)}>
-                        <span>{route.label}</span>
-                      </div>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-          */}
-
-          {/* Manual Submenu Controls (currently commented out)
           <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem className="flex w-full gap-2 items-center justify-center">
-                  <FolderPlus
-                    className="w-5 h-5 text-blue-500 cursor-pointer"
-                    onClick={handleAddSubMenu}
-                  />
-                  <FilePlus2
-                    className="w-5 h-5 text-blue-500 cursor-pointer"
-                    onClick={handleAddSubMenuItem}
-                  />
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
+            -{" "}
+            <SidebarMenuItem className="flex w-full gap-2 items-center justify-center">
+              <FolderPlus
+                className="w-5 h-5 text-blue-500 cursor-pointer"
+                onClick={handleAddCategory}
+              />
+              <FilePlus2
+                className="w-5 h-5 text-blue-500 cursor-pointer"
+                /* onClick={handleAddDocument} */
+              />
+            </SidebarMenuItem>
           </SidebarGroup>
-          
 
-          {/* Render manually added submenus (currently commented out)
-          {subMenus.map((subMenu) => (
-            <SidebarGroup key={subMenu.id}>
-              <Collapsible
-                open={collapsibleStates.current[subMenu.id] || false}
-                onOpenChange={() => toggleCollapsible(subMenu.id)}
-              >
-                <ReusableContextMenu
-                  trigger={
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          className={`${
-                            selectedSubMenuId === subMenu.id ? "bg-blue-100" : ""
-                          }`}
-                          onClick={() => handleSelectSubMenu(subMenu.id)}
-                        >
-                          <span>
-                            {collapsibleStates.current[subMenu.id] ? (
-                              <ChevronDown />
-                            ) : (
-                              <ChevronRight />
-                            )}
-                          </span>
-                          {subMenu.id}
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {subMenu.items.map((item) => (
-                            <SidebarMenuSubItem key={item}>
-                              {item}
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  }
-                  items={contextMenuItems}
-                />
-              </Collapsible>
-            </SidebarGroup>
-          ))}
-          */}
-
-          {/* Render Categories recursively from your API data */}
           <SidebarGroup>
             <Collapsible defaultOpen>
               <CollapsibleContent>
                 <SidebarMenuSub>
                   {categories.map((category) => (
-                    <CategoryItem key={category.id} category={category} />
+                    <CategoryItem
+                      key={category.id}
+                      category={category}
+                      setSelectId={setSelectId}
+                      selectId={selectId}
+                    />
                   ))}
                 </SidebarMenuSub>
               </CollapsibleContent>
