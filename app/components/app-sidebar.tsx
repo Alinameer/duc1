@@ -5,12 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 import {
-  ContextMenu,
-  ContextMenuTrigger,
-  ContextMenuContent,
-  ContextMenuItem,
-} from "@/components/ui/context-menu";
-import {
   Sidebar,
   SidebarHeader,
   SidebarMenu,
@@ -48,6 +42,7 @@ import { FilePlus2, FolderPlus } from "lucide-react";
 
 import SearchComponent from "@/components/genral/Search";
 import { twMerge } from "tailwind-merge";
+import { ReusableContextMenu } from "./ReusableContextMenu";
 
 //
 // Interfaces
@@ -56,11 +51,6 @@ interface MenuItem {
   label: string;
   icon?: ReactNode;
   onClick: () => void;
-}
-
-interface ReusableContextMenuProps {
-  trigger: ReactNode;
-  items: MenuItem[];
 }
 
 export interface Document {
@@ -77,27 +67,7 @@ export interface Category {
   documents: Document[];
 }
 
-//
 // Reusable Context Menu Component
-//
-export function ReusableContextMenu({
-  trigger,
-  items,
-}: ReusableContextMenuProps) {
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger> {trigger}</ContextMenuTrigger>
-      <ContextMenuContent className="bg-background border border-gray-200 rounded-lg shadow-lg">
-        {items.map((item, index) => (
-          <ContextMenuItem key={index} onClick={item.onClick}>
-            {item.icon && <span className="mr-2">{item.icon}</span>}
-            {item.label}
-          </ContextMenuItem>
-        ))}
-      </ContextMenuContent>
-    </ContextMenu>
-  );
-}
 
 function DocumentItem({ doc }: { doc: Document }) {
   const queryClient = useQueryClient();
@@ -138,6 +108,7 @@ function DocumentItem({ doc }: { doc: Document }) {
     }
   };
 
+  
   const contextMenuItems: MenuItem[] = [
     {
       label: "Rename",
@@ -179,9 +150,9 @@ function DocumentItem({ doc }: { doc: Document }) {
   );
 }
 
-//
 // CategoryItem Component (renders recursively)
-//
+
+
 function CategoryItem({
   category,
   setSelectId,
@@ -305,9 +276,7 @@ function CategoryItem({
   );
 }
 
-//
 // AppSidebar Component
-//
 
 export function AppSidebar() {
   const {

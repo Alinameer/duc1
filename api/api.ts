@@ -43,7 +43,6 @@ export const signUp = async (data: { username: string; password: string }) => {
 };
 export const signout = async () => {
   const cook = await cookies();
-  console.log(cook.get("token").value);
   
   try {
     const response = await axios.post(`${API_BASE_URL}/user/logout?refresh_token=${cook.get("token").value}`);
@@ -201,7 +200,7 @@ export const deleteDocument = async (data: { id: string; }) => {
 };
 
 
-export const createCategory = async (data: { name: string; cate_parent?: string }) => {
+export const createCategory = async (data: { name: string; cate_parent?: any }) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/category/create-category`, data);
 
@@ -216,7 +215,7 @@ export const createCategory = async (data: { name: string; cate_parent?: string 
   }
 };
 
-export const createDocument = async (data: { content: string; title: string; category: string }) => {
+export const createDocument = async (data: { content: string; title: string; category: any }) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/document/create-doc`, data);
 
