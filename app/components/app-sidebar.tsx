@@ -334,8 +334,6 @@ export function AppSidebar() {
         content: "",
         category: selectId,
       };
-        console.log(selectId,"mewo ");
-        
       createDocumentMutation.mutate(documentData);
     }
   };
