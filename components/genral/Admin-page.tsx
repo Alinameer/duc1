@@ -6,14 +6,12 @@ import { hasPermission, Role } from "@/lib/auth";
 
 // Ensure the correct structure for props, passing the user object properly
 const AdminOnlyPage: React.FC<{ user: { id: string; role?: Role } }> = ({ user }) => {
-  // Fetch users with useQuery
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["documents"],
+    queryKey: ["allUsers"],
     queryFn: getAllUsers,
   });
 
-  // Check if the user has permission to view the page
-  if (!hasPermission(user, "view")) {
+/*   if (!hasPermission(user, "view")) {
     return <div>Access Denied. You do not have permission to view this page.</div>;
   }
 
@@ -22,8 +20,7 @@ const AdminOnlyPage: React.FC<{ user: { id: string; role?: Role } }> = ({ user }
 
   // Display error message if fetching fails
   if (isError) return <div>Error fetching users.</div>;
-
-  // Render user data once it's fetched
+ */
   return (
 <div className="p-6 bg-white shadow-md rounded-lg">
   <h2 className="text-2xl font-semibold text-gray-800 mb-4">Users List</h2>

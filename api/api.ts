@@ -12,6 +12,7 @@ export const getDocument = async (docId: string) => {
     throw error; 
   }
 };
+
 export const signin = async (data: { username: string; password: string }) => {
   const cook = await cookies();
   try {
@@ -20,7 +21,7 @@ export const signin = async (data: { username: string; password: string }) => {
       return { success: false, message: response.data.message };
     }
     cook.set("token", response.data.access);
-    return response.data; // Return the data from the API
+    return response.data; 
   } catch (error) {
     console.error("Error during login:", error);
     throw error; 
@@ -35,7 +36,7 @@ export const signUp = async (data: { username: string; password: string }) => {
       return { success: false, message: response.data.message };
     }
     cook.set("token", response.data.access);
-    return response.data; // Return the data from the API
+    return response.data; 
   } catch (error) {
     console.error("Error during signup:", error);
     throw error;
@@ -57,22 +58,7 @@ export const signout = async () => {
   }
 };
 
-export const getRoles = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/role/get_all`);
-    const rolesData = response.data;
 
-    const roles = rolesData.map((item: { id: string; role: string }) => ({
-      id: item.id,
-      role: item.role,
-    }));
-
-    return roles; 
-  } catch (error) {
-    console.error("Error fetching roles:", error);
-    throw error;
-  }
-};
 
 
 export const getAllUsers = async () => {
@@ -227,5 +213,70 @@ export const createDocument = async (data: { content: string; title: string; cat
   } catch (error: any) {
     console.error("Error during category creation:", error);
     return { success: false, message: error.response?.data?.message || "An error occurred" };
+  }
+};
+
+
+export const getRoles = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/role/get_all`);
+    const rolesData = response.data;
+
+    const roles = rolesData.map((item: { id: string; role: string }) => ({
+      id: item.id,
+      role: item.role,
+    }));
+
+    return roles; 
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    throw error;
+  }
+};
+export const getPermissionsNotInRole = async (id:string) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/rolepermission/get_permissions_not_in_role/${id}`);
+    const rolesData = response.data;
+
+    const roles = rolesData.map((item: { id: string; permission: string }) => ({
+      id: item.id,
+      permission: item.permission,
+    }));
+
+    return roles; 
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    throw error;
+  }
+};
+
+export const getPermissionsInRole = async (id:string) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/rolepermission/get_permissions_in_role/${id}`);
+    const rolesData = response.data;
+
+    const roles = rolesData.map((item: { id: string; permission: string }) => ({
+      id: item.id,
+      permission: item.permission,
+    }));
+
+    return roles; 
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    throw error;
+  }
+};
+
+
+export const assignPermissionToRole = async ( id: string ) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/rolepermission/get_permissions_in_role/${id}`,);
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+    return response.data; 
+  } catch (error) {
+    console.error("Error during login:", error);
+    throw error; 
   }
 };

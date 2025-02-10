@@ -230,6 +230,9 @@ function CategoryItem({
 
   const hasChildren = category.subcategories?.length > 0;
   const hasDocuments = category.documents?.length > 0;
+
+/*   <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+ */
   return (
     <>
       <SidebarGroup>
@@ -248,7 +251,7 @@ function CategoryItem({
                     onClick={() => setSelectId(category.id)}
                   >
                     <span className="mr-2">
-                      {selectId ? <ChevronDown /> : <ChevronRight />}
+                      {hasChildren ? <ChevronDown /> : <ChevronRight />}
                     </span>
                     {category.name}
                   </SidebarMenuButton>

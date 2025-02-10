@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useRef, useReducer, useState } from "react";
 import dynamic from "next/dynamic";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,13 +10,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getDocument, rolePermission, updateDocument } from "@/api/api";
+import { getDocument, updateDocument } from "@/api/api";
 import { useDocumentTitle } from "@/hooks/DocumentTitleContext";
 
-const Editor = dynamic(
-  () => import("@toast-ui/react-editor").then((mod) => mod.Editor),
-  { ssr: false }
-);
+// Dynamically import the Editor (disables SSR)
+const Editor = dynamic(() => import("@toast-ui/react-editor").then(mod => mod.Editor), {
+  ssr: false,
+});
+
 
 interface DropdownState {
   visible: boolean;
@@ -31,14 +33,10 @@ type DropdownAction =
   | { type: "CLOSE" };
 
 interface MyEditorProps {
-  user: { id: string; };
   docId: string;
 }
 
-const dropdownReducer = (
-  state: DropdownState,
-  action: DropdownAction
-): DropdownState => {
+const dropdownReducer = (state: DropdownState, action: DropdownAction): DropdownState => {
   switch (action.type) {
     case "OPEN":
       return {
@@ -53,43 +51,38 @@ const dropdownReducer = (
   }
 };
 
-const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
+const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   const editorRef = useRef<any>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
-  const { setTitle } = useDocumentTitle(); 
+  const { setTitle } = useDocumentTitle();
 
   const [dropdownState, dispatchDropdown] = useReducer(dropdownReducer, {
     visible: false,
     position: { top: 0, left: 0 },
     items: [],
   });
-
   const [plugins, setPlugins] = useState<any[]>([]);
 
+  // Load Editor plugins dynamically
   useEffect(() => {
     const loadPlugins = async () => {
       const { default: Prism } = await import("prismjs");
-
-      const [codeSyntaxHighlight, colorSyntax, tableMergedCell, uml, chart] =
-        await Promise.all([
-          import("@toast-ui/editor-plugin-code-syntax-highlight").then(
-            (mod) => mod.default
-          ),
-          import("@toast-ui/editor-plugin-color-syntax").then(
-            (mod) => mod.default
-          ),
-          import("@toast-ui/editor-plugin-table-merged-cell").then(
-            (mod) => mod.default
-          ),
-          import("@toast-ui/editor-plugin-uml").then((mod) => mod.default),
-          import("@toast-ui/editor-plugin-chart").then((mod) => mod.default),
-        ]);
+      const [
+        codeSyntaxHighlight,
+        colorSyntax,
+        tableMergedCell,
+        uml,
+        chart,
+      ] = await Promise.all([
+        import("@toast-ui/editor-plugin-code-syntax-highlight").then(mod => mod.default),
+        import("@toast-ui/editor-plugin-color-syntax").then(mod => mod.default),
+        import("@toast-ui/editor-plugin-table-merged-cell").then(mod => mod.default),
+        import("@toast-ui/editor-plugin-uml").then(mod => mod.default),
+        import("@toast-ui/editor-plugin-chart").then(mod => mod.default),
+      ]);
 
       setPlugins([
-        [
-          chart,
-          { minWidth: 100, maxWidth: 600, minHeight: 100, maxHeight: 300 },
-        ],
+        [chart, { minWidth: 100, maxWidth: 600, minHeight: 100, maxHeight: 300 }],
         [codeSyntaxHighlight, { highlighter: Prism }],
         colorSyntax,
         tableMergedCell,
@@ -100,13 +93,14 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
     loadPlugins();
   }, []);
 
+  // Fetch document data using react-query
   const { data, isLoading, isError } = useQuery({
     queryKey: ["documents", docId],
     queryFn: () => getDocument(docId),
   });
 
   useEffect(() => {
-    if (data && data[0]?.title) {
+    if (data?.[0]?.title) {
       setTitle(data[0].title);
     }
   }, [data, setTitle]);
@@ -115,7 +109,6 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
   const { mutate: updateDoc } = useMutation({
     mutationFn: updateDocument,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["c"] });
       queryClient.invalidateQueries({ queryKey: ["documents", docId] });
     },
     onError: (error: any) => {
@@ -124,16 +117,14 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
   });
 
   const handleSave = () => {
-    if (editorRef.current) {
-      const markdown = editorRef.current.getInstance().getMarkdown();
-      updateDoc({
-        id: docId,
-        content: markdown,
-      });
-      localStorage.setItem("markdown", markdown);
-    }
+    if (!editorRef.current) return;
+    const editorInstance = editorRef.current.getInstance();
+    const markdown = editorInstance.getMarkdown();
+    updateDoc({ id: docId, content: markdown });
+    localStorage.setItem("markdown", markdown);
   };
 
+  // Handle keydown events to open/close the dropdown
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "/") {
       event.preventDefault();
@@ -147,7 +138,6 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
 
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
-
       const editorRect = editorContainerRef.current.getBoundingClientRect();
       const isCursorAtStart = rect.top === 0 && rect.left === 0;
       const top = isCursorAtStart
@@ -156,12 +146,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
       const left = isCursorAtStart ? 0 : rect.left - editorRect.left;
 
       const dropdownItems = [
-        "Heading 1",
-        "Heading 2",
-        "Heading 3",
-        "Heading 4",
-        "Heading 5",
-        "Heading 6",
+        "Heading 1","Heading 2", "Heading 3","Heading 4","Heading 5","Heading 6",
         "bold",
         "italic",
         "strike",
@@ -183,69 +168,33 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
   };
 
   const handleDropdownSelect = (item: string) => {
-    if (editorRef.current) {
-      const editorInstance = editorRef.current.getInstance();
-      switch (item) {
-        case "Heading 1":
-          editorInstance.exec("heading", { level: 1 });
-          break;
-        case "Heading 2":
-          editorInstance.exec("heading", { level: 2 });
-          break;
-        case "Heading 3":
-          editorInstance.exec("heading", { level: 3 });
-          break;
-        case "Heading 4":
-          editorInstance.exec("heading", { level: 4 });
-          break;
-        case "Heading 5":
-          editorInstance.exec("heading", { level: 5 });
-          break;
-        case "Heading 6":
-          editorInstance.exec("heading", { level: 6 });
-          break;
-        case "bold":
-          editorInstance.exec("bold");
-          break;
-        case "italic":
-          editorInstance.exec("italic");
-          break;
-        case "strike":
-          editorInstance.exec("strike");
-          break;
-        case "hr":
-          editorInstance.exec("hr");
-          break;
-        case "ul":
-          editorInstance.exec("bulletList");
-          break;
-        case "ol":
-          editorInstance.exec("orderedList");
-          break;
-        case "task":
-          editorInstance.exec("taskList");
-          break;
-        case "code":
-          editorInstance.exec("code");
-          break;
-        case "codeblock":
-          editorInstance.exec("codeBlock");
-          break;
-        default:
-          break;
-      }
-      editorInstance.focus();
-    }
+    if (!editorRef.current) return;
+    const editorInstance = editorRef.current.getInstance();
+    const commandMapping: Record<string, () => void> = {
+      "Heading 1": () => editorInstance.exec("heading", { level: 1 }),
+      "Heading 2": () => editorInstance.exec("heading", { level: 2 }),
+      "Heading 3": () => editorInstance.exec("heading", { level: 3 }),
+      "Heading 4": () => editorInstance.exec("heading", { level: 4 }),
+      "Heading 5": () => editorInstance.exec("heading", { level: 5 }),
+      "Heading 6": () => editorInstance.exec("heading", { level: 6 }),
+      bold: () => editorInstance.exec("bold"),
+      italic: () => editorInstance.exec("italic"),
+      strike: () => editorInstance.exec("strike"),
+      hr: () => editorInstance.exec("hr"),
+      ul: () => editorInstance.exec("bulletList"),
+      ol: () => editorInstance.exec("orderedList"),
+      task: () => editorInstance.exec("taskList"),
+      code: () => editorInstance.exec("code"),
+      codeblock: () => editorInstance.exec("codeBlock"),
+    };
+
+    commandMapping[item]?.();
+    editorInstance.focus();
     dispatchDropdown({ type: "CLOSE" });
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isError) {
-    return <div>Error loading document.</div>;
-  }
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading document.</div>;
 
   return (
     <div className="relative">
@@ -254,12 +203,11 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
         onKeyDown={handleKeyDown}
         tabIndex={0}
         className="focus:outline-none"
-        aria-label="Markdown editor"
       >
         <Editor
           ref={editorRef}
           height="800px"
-          initialValue={data[0].content || "write your content here..."}
+          initialValue={data?.[0]?.content || "Enter your content here..."  }
           initialEditType="wysiwyg"
           previewStyle="vertical"
           plugins={plugins}
@@ -272,6 +220,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
       >
         Save
       </button>
+
       {dropdownState.visible && (
         <div
           style={{
@@ -289,7 +238,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
               <div />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white border rounded shadow-lg w-40">
-              {dropdownState.items.map((item) => (
+              {dropdownState.items.map(item => (
                 <DropdownMenuItem
                   key={item}
                   onClick={() => handleDropdownSelect(item)}
