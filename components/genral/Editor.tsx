@@ -31,7 +31,7 @@ type DropdownAction =
   | { type: "CLOSE" };
 
 interface MyEditorProps {
-  user: { id: string; role?: Role };
+  user: { id: string; };
   docId: string;
 }
 
@@ -239,11 +239,6 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
     dispatchDropdown({ type: "CLOSE" });
   };
 
-  /*   const { data: permission } = useQuery({
-    queryKey: ["rolePermission"],
-    queryFn: rolePermission,
-  });
- */
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -277,13 +272,6 @@ const MyEditor: React.FC<MyEditorProps> = ({ user, docId }) => {
       >
         Save
       </button>
-      {/* 
-      {hasPermission(permission?.[0], "Edit Category") && (
-        <button className="mt-4 p-2 bg-green-500 text-white rounded ml-2">
-          Edit
-        </button>
-      )} */}
-
       {dropdownState.visible && (
         <div
           style={{

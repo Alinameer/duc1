@@ -36,9 +36,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <div
-          className={
-            "mx-auto w-full bg-background border-border/40 dark:border-border min-[1800px]:max-w-[1536px] min-[1800px]:border-x flex justify-center items-center overflow-hidden relative"
-          }
+          className="w-full bg-background border-border/40 dark:border-border border-x flex justify-center items-center overflow-hidden relative"
         >
           <QueryProvider>
             <SidebarProvider>
@@ -46,12 +44,13 @@ export default function RootLayout({
 
               <main
                 className="
-          h-screen overflow-y-auto scrollbar-hidden relative flex min-h-svh flex-1 flex-col peer-data-[variant=floating]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=floating]:mb-4 md:peer-data-[state=collapsed]:peer-data-[variant=floating]:ml-2 md:peer-data-[variant=floating]:ml-0  md:peer-data-[variant=floating]:rounded-xl 
-          md:peer-data-[variant=floating]:shadow 
-          border
-          
-          group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border
-          "
+                h-screen w-full overflow-y-auto scrollbar-hidden relative flex min-h-svh flex-1 flex-col peer-data-[variant=floating]:min-h-[calc(100svh-theme(spacing.4))] 
+                md:peer-data-[state=collapsed]:peer-data-[variant=floating]:ml-2 
+                md:peer-data-[variant=floating]:ml-0  
+                md:peer-data-[variant=floating]:rounded-xl 
+                md:peer-data-[variant=floating]:shadow 
+                border 
+                group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border"
               >
                 <DocumentTitleProvider>
                   <Header />
