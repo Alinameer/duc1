@@ -43,7 +43,17 @@ type Permission = {
   };
 
   const { mutate: removePermission } = useMutation({
-    mutationFn: deletePermission,
+    mutationFn: ({
+      permissionId,
+      roleId,
+    }: {
+      permissionId: string;
+      roleId: string;
+    }) => 
+      // Pass the permission ID inside an array to match the expected request body format.
+       deletePermission([permissionId], roleId),
+    
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['permissions', id] });
       queryClient.invalidateQueries({ queryKey: ['role-permission', id] });
@@ -53,8 +63,8 @@ type Permission = {
       console.error('Error during permission removal:', error),
   });
 
-  const handleDelete = (permission: string) => {
-    removePermission({ id: permission });
+  const handleDelete = (permissionId: string) => {
+    removePermission({ permissionId, roleId: id });
   };
   
   return (
