@@ -268,15 +268,42 @@ export const getPermissionsInRole = async (id:string) => {
 };
 
 
-export const assignPermissionToRole = async ( id: string ) => {
+export const assignPermissionToRole = async (data: { role_id: string; permission_id: string[] }) => {
+  console.log(data);
+  
   try {
-    const response = await axios.post(`${API_BASE_URL}/rolepermission/get_permissions_in_role/${id}`,);
+    const response = await axios.post(`${API_BASE_URL}/rolepermission/create_rolesperms`, data);
+    console.log(response);
+    
     if (response.status !== 200) {
       return { success: false, message: response.data.message };
     }
-    return response.data; 
+    return response.data;
   } catch (error) {
-    console.error("Error during login:", error);
-    throw error; 
+    console.error("Error during permission assignment:", error);
+    throw error;
+  }
+};
+
+
+export const deletePermission = async (data: { id: string; }) => {
+  console.log(data.id);
+  
+  try {
+    const response = await axios.delete(
+      `${API_BASE_URL}/rolepermission/delete_rolesoerms/${data.id}`, 
+    );
+    
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during document update:", error);
+    return { 
+      success: false, 
+      message: error.response?.data?.message || "An error occurred" 
+    };
   }
 };

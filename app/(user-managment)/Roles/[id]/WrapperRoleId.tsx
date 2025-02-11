@@ -1,10 +1,16 @@
 
 'use client';
-import {  getPermissionsInRole, getPermissionsNotInRole } from "@/api/api";
+import {  assignPermissionToRole, deletePermission, getPermissionsInRole, getPermissionsNotInRole } from "@/api/api";
 import { Button } from "@/components/ui/button";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowLeftCircle } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 import React from "react";
+
+
+type Permission = {
+  id: string;
+  permission: string;
+};
 
 
  function WrapperRoleId  ({id}: {id:any}) {
@@ -16,10 +22,41 @@ import React from "react";
     queryKey: ['role-permission',id],
     queryFn: ()=>getPermissionsNotInRole(id)
   })
-/*   const {} = useMutation({
-    mutationFn: (
+
+  const queryClient = useQueryClient();
+
+
+  const { mutate:assignPermission } = useMutation({
+    mutationFn: assignPermissionToRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey:["permissions", id]});
+      queryClient.invalidateQueries({queryKey:["role-permission", id]});
+      console.log("Permission assigned successfully");
+    },
+    onError: (error) => {
+      console.error("Error during login:", error);
+    },
   })
- */
+
+  const handleAssignPermission = (s: string) => {
+    assignPermission({ role_id: id, permission_id:[s] });
+  };
+
+  const { mutate: removePermission } = useMutation({
+    mutationFn: deletePermission,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['permissions', id] });
+      queryClient.invalidateQueries({ queryKey: ['role-permission', id] });
+      console.log('Permission removed successfully');
+    },
+    onError: (error: any) =>
+      console.error('Error during permission removal:', error),
+  });
+
+  const handleDelete = (permission: string) => {
+    removePermission({ id: permission });
+  };
+  
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-black mb-4">Permissions  {id}</h1>
@@ -34,8 +71,8 @@ import React from "react";
             <h2 className="text-lg font-semibold text-gray-800">
               {permission.permission}
             </h2>
-            <Button >
-              <ArrowLeftCircle className="bg-white text-black"/>
+            <Button onClick={() => handleAssignPermission(permission.id)}>
+              <ArrowRightCircle className="bg-white text-black"/>
             </Button>
           </div>
         ))}
@@ -50,7 +87,7 @@ import React from "react";
             <h2 className="text-lg font-semibold text-gray-800">
               {permission.permission}
             </h2>
-            <Button >
+            <Button  onClick={()=>handleDelete(permission.id)}>
               <ArrowLeftCircle className="bg-white text-black"/>
             </Button>
           </div>

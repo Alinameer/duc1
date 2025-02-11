@@ -1,6 +1,4 @@
 
-import { getPermissions } from "@/api/api";
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import WrapperRoleId from "./WrapperRoleId";
 
