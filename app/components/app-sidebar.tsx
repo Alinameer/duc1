@@ -342,6 +342,7 @@ export function AppSidebar() {
     setIsAddDocumentModalOpen(true);
   };
 
+
   return (
     <>
       <Sidebar className="absolute">

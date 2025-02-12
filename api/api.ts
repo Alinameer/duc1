@@ -388,3 +388,28 @@ export const deleteRole = async (data: { id: string }) => {
     };
   }
 };
+
+export const updateRole = async (data: {
+  id: string;
+  role?: string;
+}) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/role/update_roles`,
+      data
+    );
+    console.log(response);
+
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during role update:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "An error occurred",
+    };
+  }
+};
