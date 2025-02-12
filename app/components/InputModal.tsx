@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,12 +32,35 @@ const InputModal: React.FC<InputModalProps> = ({
 }) => {
   const [value, setValue] = useState(initialValue);
 
-  // Reset the input value whenever the modal is opened or the initial value changes.
   useEffect(() => {
     if (open) {
       setValue(initialValue);
     }
   }, [open, initialValue]);
+
+  const handleSave = useCallback(() => {
+    onSave(value);
+    onOpenChange(false); // Close the modal after saving
+  }, [value, onSave, onOpenChange]);
+
+  const handleCancel = useCallback(() => {
+    onCancel();
+    onOpenChange(false); // Close the modal after canceling
+  }, [onCancel, onOpenChange]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSave();
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleCancel();
+      }
+    },
+    [handleSave, handleCancel]
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,25 +74,16 @@ const InputModal: React.FC<InputModalProps> = ({
           className="mt-4"
           autoFocus
           placeholder={placeholder}
+          onKeyDown={handleKeyDown} // Listen for Enter and Escape
         />
         <DialogFooter className="mt-4 flex justify-end space-x-2">
           <Button
             variant="outline"
-            onClick={() => {
-              onCancel();
-              onOpenChange(false);
-            }}
+            onClick={handleCancel}
           >
             Cancel
           </Button>
-          <Button
-            onClick={() => {
-              onSave(value);
-              onOpenChange(false);
-            }}
-          >
-            Save
-          </Button>
+          <Button onClick={handleSave}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

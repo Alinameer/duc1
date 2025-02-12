@@ -347,15 +347,11 @@ export const deletePermission = async (
   }
 };
 
-export const createRole = async (data: {
-  id: string;
-  role: string;
-}) => {
+export const createRole = async (data: { role: string }) => {
   try {
-    const response = await axios.post(
-      `${API_BASE_URL}/role/create-role`,
-      data
-    );
+    
+    const response = await axios.post(`${API_BASE_URL}/role/create_role`, data);
+    console.log(response);
 
     if (response.status !== 200) {
       return { success: false, message: response.data.message };
@@ -363,7 +359,29 @@ export const createRole = async (data: {
 
     return { success: true, data: response.data };
   } catch (error: any) {
-    console.error("Error during category creation:", error);
+    console.error("Error during role creation:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "An error occurred",
+    };
+  }
+};
+
+
+export const deleteRole = async (data: { id: string }) => {
+  try {
+    const response = await axios.delete(
+      `${API_BASE_URL}/role/delete_role/${data.id}`
+    );
+    console.log(response);
+
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during document update:", error);
     return {
       success: false,
       message: error.response?.data?.message || "An error occurred",
