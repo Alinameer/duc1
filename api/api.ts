@@ -413,3 +413,96 @@ export const updateRole = async (data: {
     };
   }
 };
+
+export const getRoleInUser = async (id: string) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/assignroles/get_user_roles/${id}`
+    );
+    const rolesData = response.data;
+
+    const roles = rolesData.map((item: { id: string; role: string }) => ({
+      id: item.id,
+      role: item.role,
+    }));
+
+    return roles;
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    throw error;
+  }
+};
+
+export const getRolesNotInUser = async (id: string) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/assignroles/get_roles_not_in_user/${id}`
+    );
+    const rolesData = response.data;
+
+    const roles = rolesData.map((item: { id: string; role: string }) => ({
+      id: item.id,
+      role: item.role,
+    }));
+
+    return roles;
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    throw error;
+  }
+};
+
+
+export const assignRoleToUser = async (data: {
+  user_id: string;
+  role_id: string[];
+}) => {
+  console.log(data);
+
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/assignroles/create_assignedroles`,
+      data
+    );
+    console.log(response);
+
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error during permission assignment:", error);
+    throw error;
+  }
+};
+
+
+export const deleteRoleFromUser= async (
+  roleIds: string[], 
+  userId: string
+) => {
+  try {
+    const response = await axios.delete(
+      `${API_BASE_URL}/assignroles/delete_roles_from_user?user_id=${userId}`,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        data: roleIds,
+      }
+    );
+
+    if (response.status !== 200) {
+      return { success: false, message: response.data.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    console.error("Error during permission deletion:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "An error occurred",
+    };
+  }
+};
