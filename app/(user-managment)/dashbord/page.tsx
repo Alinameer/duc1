@@ -6,7 +6,7 @@ import React from 'react';
 
 const App: React.FC = () => {
     // Example user object
-    const { data } = useQuery({
+    const { data:roleInUser } = useQuery({
         queryKey: ["roles"],
         queryFn: getRoles,
       });
@@ -14,7 +14,7 @@ const App: React.FC = () => {
 
     return (
         <div>
-            <AdminOnlyPage user={data} />
+            <AdminOnlyPage user={roleInUser} />
         </div>
     );
 };

@@ -6,7 +6,7 @@ import { hasPermission, Role } from "@/lib/auth";
 
 // Ensure the correct structure for props, passing the user object properly
 const AdminOnlyPage: React.FC<{ user: { id: string; role?: Role } }> = ({ user }) => {
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey: ["allUsers"],
     queryFn: getAllUsers,
   });
