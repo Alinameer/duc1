@@ -17,9 +17,9 @@ export function ReusableContextMenu({
   items,
 }: ReusableContextMenuProps) {
   return (
-    <ContextMenu>
+    <ContextMenu >
       <ContextMenuTrigger> {trigger}</ContextMenuTrigger>
-      <ContextMenuContent className="bg-background border border-gray-200 rounded-lg shadow-lg">
+      <ContextMenuContent className="bg-background z-50 border border-gray-200 rounded-lg shadow-lg pointer-events-auto">
         {items.map((item, index) => (
           <ContextMenuItem key={index} onClick={item.onClick}>
             {item.icon && <span className="mr-2">{item.icon}</span>}

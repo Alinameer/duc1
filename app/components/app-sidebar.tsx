@@ -20,6 +20,8 @@ import {
   ClipboardPaste,
   Copy,
   Edit,
+  File,
+  Folder,
   Trash,
 } from "lucide-react";
 import {
@@ -45,9 +47,6 @@ import { twMerge } from "tailwind-merge";
 import { ReusableContextMenu } from "./ReusableContextMenu";
 import InputModal from "./InputModal";
 
-//
-// Interfaces
-//
 interface MenuItem {
   label: string;
   icon?: ReactNode;
@@ -89,11 +88,13 @@ function DocumentItem({ doc }: { doc: Document }) {
   });
 
   // State to control the renaming modal
-  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
 
-  const handleRename = () => {
-    setIsRenameModalOpen(true);
-  };
+const handleRename = () => {
+  setTimeout(()=>{
+    setIsRenameModalOpen(true); 
+  },300)
+};
 
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete document "${doc.title}"?`)) {
@@ -132,7 +133,7 @@ function DocumentItem({ doc }: { doc: Document }) {
     <>
       <ReusableContextMenu
         trigger={
-          <SidebarMenuSubItem>
+          <SidebarMenuSubItem className="hover:bg-gray-200">
             <Link href={`/${doc.id}`}>
               <div>{doc.title}</div>
             </Link>
@@ -140,19 +141,30 @@ function DocumentItem({ doc }: { doc: Document }) {
         }
         items={contextMenuItems}
       />
+
       <InputModal
         open={isRenameModalOpen}
         title="Rename Document"
         placeholder="Enter new title"
         initialValue={doc.title}
-        onSave={(newTitle) => {
+        onSave={(newTitle: string) => {
           if (newTitle && newTitle !== doc.title) {
-            updateDoc({ id: doc.id, title: newTitle });
+            updateDoc(
+              { id: doc.id, title: newTitle },
+              {
+                onSuccess: () => {
+                  setIsRenameModalOpen(false);
+                },
+              }
+            );
+          } else {
+            setIsRenameModalOpen(false);
           }
-          setIsRenameModalOpen(false);
         }}
         onCancel={() => setIsRenameModalOpen(false)}
-        onOpenChange={(open) => setIsRenameModalOpen(open)}
+        onOpenChange={(open: boolean) => {
+          if (!open) setIsRenameModalOpen(false);
+        }}
       />
     </>
   );
@@ -167,8 +179,8 @@ function CategoryItem({
   selectId,
 }: {
   category: Category;
-  setSelectId: any;
-  selectId: any;
+  setSelectId: (id: string | null) => void;
+  selectId: string | null;
 }) {
   const queryClient = useQueryClient();
 
@@ -186,11 +198,12 @@ function CategoryItem({
       console.error("Error during category deletion:", error),
   });
 
-  // State for the renaming modal
-  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
 
   const handleRename = () => {
-    setIsRenameModalOpen(true);
+    setTimeout(()=>{
+      setIsRenameModalOpen(true);
+    },300)
   };
 
   const handleDelete = () => {
@@ -230,29 +243,17 @@ function CategoryItem({
 
   const hasChildren = category.subcategories?.length > 0;
   const hasDocuments = category.documents?.length > 0;
-
-/*   <Collapsible open={isOpen} onOpenChange={setIsOpen}>
- */
   return (
     <>
       <SidebarGroup>
-        <Collapsible defaultOpen>
+        <Collapsible defaultOpen >
           <ReusableContextMenu
             trigger={
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
-                    className={twMerge(
-                      "flex items-center ",
-                      category.id === selectId
-                        ? "bg-gray-200 hover:bg-gray-200 text-accent-foreground"
-                        : ""
-                    )}
-                    onClick={() => setSelectId(category.id)}
                   >
-                    <span className="mr-2">
-                      {hasChildren ? <ChevronDown /> : <ChevronRight />}
-                    </span>
+                    <Folder/>
                     {category.name}
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
@@ -284,22 +285,29 @@ function CategoryItem({
         title="Rename Category"
         placeholder="Enter new category name"
         initialValue={category.name}
-        onSave={(newName) => {
+        onSave={(newName: string) => {
           if (newName && newName !== category.name) {
-            updateCat({ id: category.id, name: newName });
+            updateCat(
+              { id: category.id, name: newName },
+              {
+                onSuccess: () => {
+                  setIsRenameModalOpen(false);
+                },
+              }
+            );
+          } else {
+            setIsRenameModalOpen(false);
           }
-          setIsRenameModalOpen(false);
         }}
         onCancel={() => setIsRenameModalOpen(false)}
-        onOpenChange={(open) => setIsRenameModalOpen(open)}
+        onOpenChange={(open: boolean) => {
+          if (!open) setIsRenameModalOpen(false);
+        }}
       />
     </>
   );
 }
 
-//
-// AppSidebar Component – uses InputModal to add new categories/documents
-//
 export function AppSidebar() {
   const {
     data: categories,
@@ -318,10 +326,6 @@ export function AppSidebar() {
     onError: (error: any) =>
       console.error("Error during category creation:", error),
   });
-  const [selectId, setSelectId] = useState<string | null>(null);
-
-  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
-  const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
 
   const createDocumentMutation = useMutation({
     mutationFn: createDocument,
@@ -330,9 +334,14 @@ export function AppSidebar() {
       console.error("Error during document creation:", error),
   });
 
+  const [selectId, setSelectId] = useState<string | null>(null);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] =
+    useState<boolean>(false);
+  const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] =
+    useState<boolean>(false);
+
   if (isLoading) return <div>Loading...</div>;
-  if (isError || !categories)
-    return <div>Error fetching categories.</div>;
+  if (isError || !categories) return <div>Error fetching categories.</div>;
 
   const handleAddCategory = () => {
     setIsAddCategoryModalOpen(true);
@@ -341,7 +350,6 @@ export function AppSidebar() {
   const handleAddDocument = () => {
     setIsAddDocumentModalOpen(true);
   };
-
 
   return (
     <>
@@ -382,43 +390,54 @@ export function AppSidebar() {
         </SidebarHeader>
       </Sidebar>
 
-      {/* Modal for Adding a New Category */}
       <InputModal
         open={isAddCategoryModalOpen}
         title="Add New Category"
         placeholder="Enter category name"
         initialValue=""
-        onSave={(newCategoryName) => {
+        onSave={(newCategoryName: string) => {
           if (newCategoryName) {
-            createCategoryMutation.mutate({
-              name: newCategoryName,
-              cate_parent: selectId || null,
-            });
+            createCategoryMutation.mutate(
+              { name: newCategoryName, cate_parent: selectId || null },
+              {
+                onSuccess: () => {
+                  setIsAddCategoryModalOpen(false);
+                },
+              }
+            );
+          } else {
+            setIsAddCategoryModalOpen(false);
           }
-          setIsAddCategoryModalOpen(false);
         }}
         onCancel={() => setIsAddCategoryModalOpen(false)}
-        onOpenChange={(open) => setIsAddCategoryModalOpen(open)}
+        onOpenChange={(open: boolean) => {
+          if (!open) setIsAddCategoryModalOpen(false);
+        }}
       />
 
-      {/* Modal for Adding a New Document */}
       <InputModal
         open={isAddDocumentModalOpen}
         title="Add New Document"
         placeholder="Enter document title"
         initialValue=""
-        onSave={(newDocumentTitle) => {
+        onSave={(newDocumentTitle: string) => {
           if (newDocumentTitle) {
-            createDocumentMutation.mutate({
-              title: newDocumentTitle,
-              content: "",
-              category: selectId,
-            });
+            createDocumentMutation.mutate(
+              { title: newDocumentTitle, content: "", category: selectId },
+              {
+                onSuccess: () => {
+                  setIsAddDocumentModalOpen(false);
+                },
+              }
+            );
+          } else {
+            setIsAddDocumentModalOpen(false);
           }
-          setIsAddDocumentModalOpen(false);
         }}
         onCancel={() => setIsAddDocumentModalOpen(false)}
-        onOpenChange={(open) => setIsAddDocumentModalOpen(open)}
+        onOpenChange={(open: boolean) => {
+          if (!open) setIsAddDocumentModalOpen(false);
+        }}
       />
     </>
   );

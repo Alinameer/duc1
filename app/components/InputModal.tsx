@@ -74,7 +74,7 @@ const InputModal: React.FC<InputModalProps> = ({
           className="mt-4"
           autoFocus
           placeholder={placeholder}
-          onKeyDown={handleKeyDown} // Listen for Enter and Escape
+          onKeyDown={handleKeyDown}
         />
         <DialogFooter className="mt-4 flex justify-end space-x-2">
           <Button
