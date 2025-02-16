@@ -9,8 +9,6 @@ export default function WrapperEditer({ docId }: { docId: string }) {
     queryFn: getRoles,
   });
 
-  console.log(docId, "dddddddddddddddddddddd");
-
   return (
     <div>
       <MyEditor user={data} docId={docId} />

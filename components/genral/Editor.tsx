@@ -126,47 +126,70 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
 
   // Handle keydown events to open/close the dropdown
   const handleKeyDown = (event: React.KeyboardEvent) => {
+    const editorInstance = editorRef.current?.getInstance();
+    if (!editorInstance) return;
+  
+    const key = event.key.toLowerCase();
+    const isCtrlPressed = event.ctrlKey || event.metaKey; // Support Mac ⌘ key
+  
+    const commandMapping: Record<string, () => void> = {
+      // Basic Formatting
+      "d": () => editorInstance.exec("bold"),          // Ctrl + B for bold
+      "i": () => editorInstance.exec("italic"),        // Ctrl + I for italic
+      "`": () => editorInstance.exec("code"),          // Ctrl + ` for inline code
+      
+      // Headings
+      "1": () => editorInstance.exec("heading", { level: 1 }), // Ctrl + 1 for H1
+      "2": () => editorInstance.exec("heading", { level: 2 }), // Ctrl + 2 for H2
+      "3": () => editorInstance.exec("heading", { level: 3 }), // Ctrl + 3 for H3
+      "4": () => editorInstance.exec("heading", { level: 4 }), // Ctrl + 4 for H4
+      "5": () => editorInstance.exec("heading", { level: 5 }), // Ctrl + 5 for H5
+      "6": () => editorInstance.exec("heading", { level: 6 }), // Ctrl + 6 for H6
+    
+      // Lists
+      "o": () => editorInstance.exec("ol"),            // Ctrl + O for ordered list
+      "u": () => editorInstance.exec("ul"),            // Ctrl + U for unordered list
+    
+      // Block Quotes and Code Blocks
+      "e": () => editorInstance.exec("codeBlock"),     // Ctrl + E for code block
+   
+      // Save
+      "s": () => handleSave(),                         // Ctrl + S for save
+    };
+    
+  
+    if (isCtrlPressed && commandMapping[key]) {
+      event.preventDefault();
+      commandMapping[key]?.();
+      return;
+    }
+  
+    // Open dropdown on `/` key
     if (event.key === "/") {
       event.preventDefault();
-
-      const editorInstance = editorRef.current?.getInstance();
-      if (!editorInstance || !editorContainerRef.current) return;
-
-      const editorElement = editorInstance.getEditorElements().mdEditor;
+      if (!editorContainerRef.current) return;
+  
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
-
+  
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
       const editorRect = editorContainerRef.current.getBoundingClientRect();
-      const isCursorAtStart = rect.top === 0 && rect.left === 0;
-      const top = isCursorAtStart
-        ? editorElement.scrollTop
-        : rect.top - editorRect.top + editorElement.scrollTop;
-      const left = isCursorAtStart ? 0 : rect.left - editorRect.left;
-
+  
       const dropdownItems = [
-        "Heading 1","Heading 2", "Heading 3","Heading 4","Heading 5","Heading 6",
-        "bold",
-        "italic",
-        "strike",
-        "hr",
-        "ul",
-        "ol",
-        "task",
-        "code",
-        "codeblock",
+        "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6",
+        "bold", "italic", "strike", "hr", "ul", "ol", "task", "code", "codeblock",
       ];
-
+  
       dispatchDropdown({
         type: "OPEN",
-        payload: { position: { top, left }, items: dropdownItems },
+        payload: { position: { top: rect.top - editorRect.top, left: rect.left - editorRect.left }, items: dropdownItems },
       });
     } else if (event.key !== "Tab") {
       dispatchDropdown({ type: "CLOSE" });
     }
   };
-
+  
   const handleDropdownSelect = (item: string) => {
     if (!editorRef.current) return;
     const editorInstance = editorRef.current.getInstance();
