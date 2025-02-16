@@ -14,16 +14,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import {
-  ChevronDown,
-  ChevronRight,
-  ClipboardPaste,
-  Copy,
-  Edit,
-  File,
-  Folder,
-  Trash,
-} from "lucide-react";
+
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,12 +31,21 @@ import {
   createDocument,
 } from "@/api/api";
 
-import { FilePlus2, FolderPlus } from "lucide-react";
+import {
+  FilePlus2,
+  FolderPlus,
+  ClipboardPaste,
+  Copy,
+  Edit,
+  Folder,
+  Trash,
+  ChevronDown,
+} from "lucide-react";
 
 import SearchComponent from "@/components/genral/Search";
-import { twMerge } from "tailwind-merge";
 import { ReusableContextMenu } from "./ReusableContextMenu";
 import InputModal from "./InputModal";
+import { twMerge } from "tailwind-merge";
 
 interface MenuItem {
   label: string;
@@ -90,11 +90,11 @@ function DocumentItem({ doc }: { doc: Document }) {
   // State to control the renaming modal
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
 
-const handleRename = () => {
-  setTimeout(()=>{
-    setIsRenameModalOpen(true); 
-  },300)
-};
+  const handleRename = () => {
+    setTimeout(() => {
+      setIsRenameModalOpen(true);
+    }, 300);
+  };
 
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete document "${doc.title}"?`)) {
@@ -201,9 +201,9 @@ function CategoryItem({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
 
   const handleRename = () => {
-    setTimeout(()=>{
+    setTimeout(() => {
       setIsRenameModalOpen(true);
-    },300)
+    }, 300);
   };
 
   const handleDelete = () => {
@@ -246,15 +246,25 @@ function CategoryItem({
   return (
     <>
       <SidebarGroup>
-        <Collapsible defaultOpen >
+        <Collapsible defaultOpen>
           <ReusableContextMenu
             trigger={
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
+                <SidebarMenuButton
+                    onClick={() => setSelectId(category.id)}
+                    className={twMerge(
+                      "flex items-center gap-2 w-full",
+                      category.id === selectId && "bg-blue-100" // Add background color when selected
+                    )}
                   >
-                    <Folder/>
+                    <Folder className="w-4 h-4" />
                     {category.name}
+                    {hasChildren && (
+                      <span className="ml-auto">
+                        <ChevronDown className="w-4 h-4" />
+                      </span>
+                    )}
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
               </SidebarMenuItem>
