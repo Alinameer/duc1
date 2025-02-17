@@ -27,7 +27,10 @@ const TopBar: React.FC<TopBarProps> = ({ title, rightIcon, className }) => {
         ${className ?? ""}
       `}
     >
-      {/* Left Section (icon + title) */}
+
+       {/* TODO: adding buget and button  */}
+
+      {/* Left Section (title WITH | ) */}
       <div className="flex items-stretch">
         <div className="flex items-center space-x-2">
           {title && (

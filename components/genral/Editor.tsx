@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getDocument, updateDocument } from "@/api/api";
 import { useDocumentTitle } from "@/hooks/DocumentTitleContext";
+import { Button } from "../ui/button";
 
 // Dynamically import the Editor (disables SSR)
 const Editor = dynamic(() => import("@toast-ui/react-editor").then(mod => mod.Editor), {
@@ -54,6 +55,9 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   const editorRef = useRef<any>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
   const { setTitle } = useDocumentTitle();
+
+  const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
+
 
   const [dropdownState, dispatchDropdown] = useReducer(dropdownReducer, {
     visible: false,
@@ -207,6 +211,17 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading document.</div>;
 
+  const toggleEditorMode = () => {
+    const newMode = editorMode === 'wysiwyg' ? 'markdown' : 'wysiwyg';
+    setEditorMode(newMode);
+    
+    if (editorRef.current) {
+      const editorInstance = editorRef.current.getInstance();
+      editorInstance.changeMode(newMode);
+      editorInstance.focus();
+    }
+  };
+
   return (
     <div className="relative">
       <div
@@ -215,9 +230,16 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
         tabIndex={0}
         className="focus:outline-none"
       >
+        <div className="absolute  bottom-4 right-4 z-50">
+
+          <Button  onClick={toggleEditorMode}>
+            test
+          </Button>
+
+        </div>
         <Editor
           ref={editorRef}
-          height="800px"
+          height="93.3vh"
           initialValue={data?.[0]?.content || "Enter your content here..."}
           initialEditType="wysiwyg"
           previewStyle="vertical"
