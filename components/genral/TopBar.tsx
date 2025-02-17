@@ -3,29 +3,44 @@ import React from "react";
 interface TopBarProps {
   title?: string;
   pages?: { name: string; href: string }[];
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode; // Add this line
+  rightIcon?: React.ReactNode;
   className?: string;
 }
 
-const TopBar: React.FC<TopBarProps> = ({
-  title,
-  pages = [],
-  leftIcon,
-  rightIcon, // Add this line
-  className,
-}) => {
+const TopBar: React.FC<TopBarProps> = ({ title, rightIcon, className }) => {
   return (
-    <div className={`p-4 bg-blue-600 text-white shadow-md ${className}`}>
-      <div className="flex items-center justify-between">
-        {" "}
-        {/* Change this line */}
+    <div
+      style={{
+        borderBottom:
+          "1px solid var(--Border-Presentation-Global-Primary, #D4D4D4)",
+        boxShadow:
+          "0px 2px 9px 0px var(--Background-Presentation-Form-Header-Shadow, rgba(0, 0, 0, 0.10))",
+        backdropFilter: "blur(8px)",
+      }}
+      className={`
+        bg-[var(--Background-Presentation-Form-Header, rgba(255, 255, 255, 0.20))]
+        flex
+        items-center
+        justify-between
+        p-2  /* 8px padding */
+        text-black
+        ${className ?? ""}
+      `}
+    >
+      {/* Left Section (icon + title) */}
+      <div className="flex items-stretch">
         <div className="flex items-center space-x-2">
-          {leftIcon && <div>{leftIcon}</div>}
-          {title && <h1 className="text-xl font-semibold">{title}</h1>}
+          {title && (
+            <h1 className="text-[var(--Content-Presentation-Global-Primary,#000)] font-[510] text-[28px] leading-normal uppercase [font-feature-settings:'cv05'] font-[var(--Font-family-System-Font-En,_SF_Pro)]">
+              {title}
+            </h1>
+          )}
+          <div className="h-6 w-px bg-slate-400" />
         </div>
-        {rightIcon && <div>{rightIcon}</div>} {/* Add this line */}
       </div>
+
+      {/* Right Section (icon) */}
+      {rightIcon && <div>{rightIcon}</div>}
     </div>
   );
 };

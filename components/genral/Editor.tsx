@@ -18,7 +18,6 @@ const Editor = dynamic(() => import("@toast-ui/react-editor").then(mod => mod.Ed
   ssr: false,
 });
 
-
 interface DropdownState {
   visible: boolean;
   position: { top: number; left: number };
@@ -130,41 +129,30 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
     if (!editorInstance) return;
   
     const key = event.key.toLowerCase();
-    const isCtrlPressed = event.ctrlKey || event.metaKey; // Support Mac ⌘ key
-  
+    const isCtrlPressed = event.ctrlKey || event.metaKey;
+
     const commandMapping: Record<string, () => void> = {
-      // Basic Formatting
-      "d": () => editorInstance.exec("bold"),          // Ctrl + B for bold
-      "i": () => editorInstance.exec("italic"),        // Ctrl + I for italic
-      "`": () => editorInstance.exec("code"),          // Ctrl + ` for inline code
-      
-      // Headings
-      "1": () => editorInstance.exec("heading", { level: 1 }), // Ctrl + 1 for H1
-      "2": () => editorInstance.exec("heading", { level: 2 }), // Ctrl + 2 for H2
-      "3": () => editorInstance.exec("heading", { level: 3 }), // Ctrl + 3 for H3
-      "4": () => editorInstance.exec("heading", { level: 4 }), // Ctrl + 4 for H4
-      "5": () => editorInstance.exec("heading", { level: 5 }), // Ctrl + 5 for H5
-      "6": () => editorInstance.exec("heading", { level: 6 }), // Ctrl + 6 for H6
-    
-      // Lists
-      "o": () => editorInstance.exec("ol"),            // Ctrl + O for ordered list
-      "u": () => editorInstance.exec("ul"),            // Ctrl + U for unordered list
-    
-      // Block Quotes and Code Blocks
-      "e": () => editorInstance.exec("codeBlock"),     // Ctrl + E for code block
-   
-      // Save
-      "s": () => handleSave(),                         // Ctrl + S for save
+      "d": () => editorInstance.exec("bold"),
+      "i": () => editorInstance.exec("italic"),
+      "`": () => editorInstance.exec("code"),
+      "1": () => editorInstance.exec("heading", { level: 1 }),
+      "2": () => editorInstance.exec("heading", { level: 2 }),
+      "3": () => editorInstance.exec("heading", { level: 3 }),
+      "4": () => editorInstance.exec("heading", { level: 4 }),
+      "5": () => editorInstance.exec("heading", { level: 5 }),
+      "6": () => editorInstance.exec("heading", { level: 6 }),
+      "o": () => editorInstance.exec("ol"),
+      "u": () => editorInstance.exec("ul"),
+      "e": () => editorInstance.exec("codeBlock"),
+      "s": () => handleSave(),
     };
     
-  
     if (isCtrlPressed && commandMapping[key]) {
       event.preventDefault();
       commandMapping[key]?.();
       return;
     }
   
-    // Open dropdown on `/` key
     if (event.key === "/") {
       event.preventDefault();
       if (!editorContainerRef.current) return;
@@ -230,19 +218,13 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
         <Editor
           ref={editorRef}
           height="800px"
-          initialValue={data?.[0]?.content || "Enter your content here..."  }
+          initialValue={data?.[0]?.content || "Enter your content here..."}
           initialEditType="wysiwyg"
           previewStyle="vertical"
           plugins={plugins}
+          onChange={handleSave}
         />
       </div>
-
-      <button
-        onClick={handleSave}
-        className="mt-4 p-2 bg-blue-500 text-white rounded"
-      >
-        Save
-      </button>
 
       {dropdownState.visible && (
         <div
