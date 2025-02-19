@@ -33,11 +33,13 @@ export default function RootLayout({
           type="font/woff2"
           crossOrigin="anonymous"
         />
+        <link
+          href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+          rel="stylesheet"
+        />
       </head>
       <body className={inter.className}>
-        <div
-          className="w-full bg-background border-border/40 dark:border-border border-x flex justify-center items-center overflow-hidden relative"
-        >
+        <div className="w-full bg-background border-border/40 dark:border-border border-x flex justify-center items-center overflow-hidden relative">
           <QueryProvider>
             <SidebarProvider>
               <AppSidebar />

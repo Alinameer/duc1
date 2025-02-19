@@ -1,7 +1,17 @@
 import type { Config } from "tailwindcss";
 
 export default {
-    darkMode: ["class"],
+    darkMode: ["class"],plugins: [
+    require('tailwindcss-animate'),
+    require('tailwind-scrollbar-hide'),
+    require('glare-typography'),
+    require('glare-themes'),
+    require('glare-torch-mode'),
+      function ({ addVariant }: any) {
+        addVariant("rtl", '&[dir="rtl"]');
+        addVariant("ltr", '&[dir="ltr"]');
+      },
+  ],
     content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -68,5 +78,5 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+
 } satisfies Config;

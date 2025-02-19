@@ -1,3 +1,7 @@
+import { ActionButton } from "@/app/components/torch/components/ActionButton";
+import { Badge } from "@/app/components/torch/components/Badge";
+import { Button } from "@/app/components/torch/components/Button";
+import { DropDownButton } from "@/app/components/torch/components/DropDownButton";
 import React from "react";
 
 interface TopBarProps {
@@ -27,23 +31,37 @@ const TopBar: React.FC<TopBarProps> = ({ title, rightIcon, className }) => {
         ${className ?? ""}
       `}
     >
-
-       {/* TODO: adding buget and button  */}
-
-      {/* Left Section (title WITH | ) */}
+      {/* Left Section (title with divider and badge) */}
       <div className="flex items-stretch">
         <div className="flex items-center space-x-2">
           {title && (
-            <h1 className="text-[var(--Content-Presentation-Global-Primary,#000)] font-[510] text-[28px] leading-normal uppercase [font-feature-settings:'cv05'] font-[var(--Font-family-System-Font-En,_SF_Pro)]">
+            <h1 className="text-[var(--Content-Presentation-Global-Primary,#000)] text-[28px] leading-normal uppercase [font-feature-settings:'cv05'] font-[var(--Font-family-System-Font-En,_SF_Pro)]">
               {title}
             </h1>
           )}
           <div className="h-6 w-px bg-slate-400" />
+
+          <Badge
+            className="bg-gradient-to-r from-[#1A7C8F] via-[#235066] to-[#243C59]"
+            size={"M"}
+            label="Auto SAVE"
+            theme="dark"
+          />
+          
         </div>
+        
+      </div>
+      
+      <div className="flex justify-center items-center gap-2 self-stretch">
+      <div className="h-6 w-px bg-slate-400" />
+      <Button size={"L"}>Print</Button>
+      <Button variant={"BlueContStyle"} size={"L"}>Create New Revidion</Button>
+      <div className="h-6 w-px bg-slate-400" />
+      <DropDownButton >Menu</DropDownButton>
+      <div className="h-6 w-px bg-slate-400" />
+      <ActionButton className="hover:bg-red-600" size={"M"}>{<i className="ri-close-fill"></i>}</ActionButton>
       </div>
 
-      {/* Right Section (icon) */}
-      {rightIcon && <div>{rightIcon}</div>}
     </div>
   );
 };

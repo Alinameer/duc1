@@ -11,7 +11,7 @@ const Header = () => {
   return (
     <header className="w-full top-0 z-50">
       <TopBar
-        title={title}
+        title={title} 
         rightIcon={<LogoutButton />}
       />
     </header>
