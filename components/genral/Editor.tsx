@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getDocument, updateDocument } from "@/api/api";
 import { useDocumentTitle } from "@/hooks/DocumentTitleContext";
-import { Button } from "../ui/button";
 import EditorToolbar from "./EditorModeToggle";
 
 // Dynamically import the Editor (disables SSR)
@@ -242,13 +241,11 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading document.</div>;
 
-  const toggleEditorMode = () => {
-    const newMode = editorMode === "wysiwyg" ? "markdown" : "wysiwyg";
-    setEditorMode(newMode);
-
+  const handleEditorModeChange = (mode: "wysiwyg" | "markdown") => {
     if (editorRef.current) {
       const editorInstance = editorRef.current.getInstance();
-      editorInstance.changeMode(newMode);
+      setEditorMode(mode);
+      editorInstance.changeMode(mode);
       editorInstance.focus();
     }
   };
@@ -262,15 +259,10 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
         className="focus:outline-none"
       >
         <div className="absolute  bottom-4 right-4 z-50">
-          {/* 
-          <Button  onClick={toggleEditorMode}>
-            Change View
-          </Button> */}
-
           <EditorToolbar
             editorMode={editorMode}
-            toggleMode={toggleEditorMode}
-          />
+            setEditorMode={handleEditorModeChange}
+          />{" "}
         </div>
         <Editor
           ref={editorRef}

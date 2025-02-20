@@ -72,14 +72,14 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       glare-themes:
-        specifier: ^1.0.1
-        version: 1.0.1(tailwindcss@3.4.17)
+        specifier: ^1.0.4
+        version: 1.0.4(tailwindcss@3.4.17)
       glare-torch-mode:
-        specifier: ^1.0.0
-        version: 1.0.0(tailwindcss@3.4.17)
-      glare-typography:
         specifier: ^1.0.1
         version: 1.0.1(tailwindcss@3.4.17)
+      glare-typography:
+        specifier: ^1.0.2
+        version: 1.0.2(tailwindcss@3.4.17)
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.5
@@ -1565,18 +1565,18 @@ packages:
   get-tsconfig@4.10.0:
     resolution: {integrity: sha512-kGzZ3LWWQcGIAmg6iWvXn0ei6WDtV26wzHRMwDSzmAbcXrTEXxHy6IehI6/4eT6VRKyMP1eF1VqwrVUmE/LR7A==}
 
-  glare-themes@1.0.1:
-    resolution: {integrity: sha512-BqOxWIOmm1rLqmEXw+oaK8oGTlcf8sV3r/F2yyZ89fVlinhVmkZEgjrpd8ByKrkYkdKZp/jYmzWdXw2iabudsQ==}
+  glare-themes@1.0.4:
+    resolution: {integrity: sha512-j/COIdbOe/3F8M5NghQmO6Vv9y9Edr4FsHtfb+AeuU9sFdrOkKdPiLv321OfwGOJR3wNHCPWY0s/+9k2R1V6XA==}
     peerDependencies:
       tailwindcss: ^3.0.0
 
-  glare-torch-mode@1.0.0:
-    resolution: {integrity: sha512-jwGuj1usjfvVCimAHthoGg97kNPXQyuOLFu31R7FzGbtdhlPBiv9W1tiau7si858BO1rtZODAAUGq61xigP92g==}
+  glare-torch-mode@1.0.1:
+    resolution: {integrity: sha512-z8qS0njCf1VpKNDubxRnPvApGXAivT97yxQMOKfd7pPnRmqCCAw4Ihl8fujSWmYEUG63zsxwJC0XSHspihF7hw==}
     peerDependencies:
       tailwindcss: ^3.0.0
 
-  glare-typography@1.0.1:
-    resolution: {integrity: sha512-74jv0AOFpZiahQltTx6DjRSNuq2BYZSAdWlvGczG2B5tabvyIgAGUMISn43RVDwd0ohaiYLNDlNZwN38dlQvsA==}
+  glare-typography@1.0.2:
+    resolution: {integrity: sha512-19KsWIfVsejz9FTotjIkM/QMEdjrk/kXgBGT0FDxufuV8lhbx2NjdauScCOTqosgtn2h0r/Swo76q5iXLvex/g==}
     peerDependencies:
       tailwindcss: ^3.0.0
 
@@ -4078,15 +4078,15 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  glare-themes@1.0.1(tailwindcss@3.4.17):
+  glare-themes@1.0.4(tailwindcss@3.4.17):
     dependencies:
       tailwindcss: 3.4.17
 
-  glare-torch-mode@1.0.0(tailwindcss@3.4.17):
+  glare-torch-mode@1.0.1(tailwindcss@3.4.17):
     dependencies:
       tailwindcss: 3.4.17
 
-  glare-typography@1.0.1(tailwindcss@3.4.17):
+  glare-typography@1.0.2(tailwindcss@3.4.17):
     dependencies:
       tailwindcss: 3.4.17
 

@@ -1,7 +1,13 @@
 import { ActionButton } from "@/app/components/torch/components/ActionButton";
 import { Badge } from "@/app/components/torch/components/Badge";
 import { Button } from "@/app/components/torch/components/Button";
-import { DropDownButton } from "@/app/components/torch/components/DropDownButton";
+import {
+  DropDownButton,
+  DropDownButtonContent,
+  DropDownButtonItem,
+  DropDownButtonTrigger,
+  DropDownButtonValue,
+} from "@/app/components/torch/components/DropDownButton";
 import React from "react";
 
 interface TopBarProps {
@@ -47,21 +53,33 @@ const TopBar: React.FC<TopBarProps> = ({ title, rightIcon, className }) => {
             label="Auto SAVE"
             theme="dark"
           />
-          
         </div>
-        
-      </div>
-      
-      <div className="flex justify-center items-center gap-2 self-stretch">
-      <div className="h-6 w-px bg-slate-400" />
-      <Button size={"L"}>Print</Button>
-      <Button variant={"BlueContStyle"} size={"L"}>Create New Revidion</Button>
-      <div className="h-6 w-px bg-slate-400" />
-      <DropDownButton >Menu</DropDownButton>
-      <div className="h-6 w-px bg-slate-400" />
-      <ActionButton className="hover:bg-red-600" size={"M"}>{<i className="ri-close-fill"></i>}</ActionButton>
       </div>
 
+      <div className="flex justify-center items-center gap-2 self-stretch">
+        <div className="h-6 w-px bg-slate-400" />
+        <Button size={"L"}>Print</Button>
+        <Button variant={"BlueContStyle"} size={"L"}>
+          Create New Revidion
+        </Button>
+        <div className="h-6 w-px bg-slate-400" />
+        <DropDownButton>
+          <DropDownButtonTrigger size={"M"}>
+            <DropDownButtonValue placeholder="More" />
+          </DropDownButtonTrigger>
+          <DropDownButtonContent className="z-[99]">
+            <DropDownButtonItem value="apple">Apple</DropDownButtonItem>
+            <DropDownButtonItem value="banana">Banana</DropDownButtonItem>
+            <DropDownButtonItem value="blueberry">Blueberry</DropDownButtonItem>
+            <DropDownButtonItem value="grapes">Grapes</DropDownButtonItem>
+            <DropDownButtonItem value="pineapple">Pineapple</DropDownButtonItem>
+          </DropDownButtonContent>
+        </DropDownButton>
+        <div className="h-6 w-px bg-slate-400" />
+        <Button buttonType={"icon"} variant={"RedSecStyle"} size={"M"}>
+          {<i className="ri-close-fill"></i>}
+        </Button>
+      </div>
     </div>
   );
 };

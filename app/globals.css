@@ -168,3 +168,18 @@ body {
   flex-direction: column !important;
   flex: 1 0 0 !important;
 }
+
+@keyframes float-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) translateX(20px) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+}
+
+.animate-float-in {
+  animation: float-in 0.3s ease-in-out forwards;
+}

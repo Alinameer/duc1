@@ -92,7 +92,7 @@ export const Badge: React.FC<BadgeProps> = ({
     >
       <span className={"flex justify-center items-center"}>
         {!badgeIcon ? (
-          <i className="text-white ri-circle-fill !text-[8px]"></i>
+          <i className="ri-circle-fill !text-[8px]"></i>
         ) : (
           badgeIcon
         )}

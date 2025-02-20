@@ -1,7 +1,6 @@
 "use client";
 import TopBar from "@/components/genral/TopBar";
 import React from "react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import LogoutButton from "@/components/genral/LogoutButton";
 import { useDocumentTitle } from "@/hooks/DocumentTitleContext";
 
