@@ -15,16 +15,16 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="relative backdrop-blur-lg">
+    <div className="relative ">
       {/* Toolbar container with animation */}
       <div
-        className={`transition-all duration-300 ease-in-out transform backdrop-blur-lg ${
+        className={`transition-all duration-300 ease-in-out transform ${
           collapsed
             ? "animate-float-out pointer-events-none"
             : "animate-float-in"
         }`}
       >
-        <div className="flex p-1 justify-end items-start gap-1 rounded-[10px] border border-white/20 bg-black-alpha-75 backdrop-blur-lg">
+        <div className="flex p-1 justify-end items-start gap-1 rounded-[10px] border border-white/20 bg-black-alpha-75 backdrop-blur-[20px]">
           <TabFormItem
             theme="dark"
             active={editorMode == "markdown"}

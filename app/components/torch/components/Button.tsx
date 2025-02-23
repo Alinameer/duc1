@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "@radix-ui/react-slot";
 import { cn } from "../utils/cn";
 
-const buttonVariants = cva(
+export const buttonVariants = cva(
   "flex items-center justify-center  transition-[background,color] duration-200 ease-in-out border border-transparent outline-none [&-i]:!leading-0",
   {
     variants: {
@@ -144,12 +144,12 @@ const buttonVariants = cva(
 
 interface Props
   extends ButtonHTMLAttributes<HTMLButtonElement>,
-  VariantProps<typeof buttonVariants> {
+    VariantProps<typeof buttonVariants> {
   is_loading?: boolean;
   disabled?: boolean;
   asChild?: boolean;
   as?: React.ElementType;
-  theme?: "dark" | "light" | "default"
+  theme?: "dark" | "light" | "default";
 }
 export const Button = forwardRef<HTMLButtonElement, Props>(
   (
@@ -227,7 +227,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(
   }
 );
 
-Button.displayName = "Button"
+Button.displayName = "Button";
 interface IconProps {
   size?: "S" | "M" | "L" | null;
   className?: string;

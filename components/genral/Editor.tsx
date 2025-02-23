@@ -1,7 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useReducer, useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useReducer,
+  useState,
+  useCallback,
+} from "react";
 import dynamic from "next/dynamic";
+import ReactDOM from "react-dom/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import {
@@ -13,13 +20,17 @@ import {
 import { getDocument, updateDocument } from "@/api/api";
 import { useDocumentTitle } from "@/hooks/DocumentTitleContext";
 import EditorToolbar from "./EditorModeToggle";
+import {
+  Button,
+  buttonVariants,
+} from "@/app/components/torch/components/Button";
+import { cn } from "@/lib/utils";
+import CustomToolbar from "./CustomToolbar";
 
 // Dynamically import the Editor (disables SSR)
 const Editor = dynamic(
   () => import("@toast-ui/react-editor").then((mod) => mod.Editor),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
 interface DropdownState {
@@ -65,7 +76,6 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   const [editorMode, setEditorMode] = useState<"wysiwyg" | "markdown">(
     "wysiwyg"
   );
-
   const [dropdownState, dispatchDropdown] = useReducer(dropdownReducer, {
     visible: false,
     position: { top: 0, left: 0 },
@@ -73,16 +83,13 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   });
   const [plugins, setPlugins] = useState<any[]>([]);
 
-  // Load Editor plugins dynamically
+  // Load editor plugins dynamically.
   useEffect(() => {
     const loadPlugins = async () => {
       const { default: Prism } = await import("prismjs");
-      const [codeSyntaxHighlight, colorSyntax, tableMergedCell, uml, chart] =
+      const [codeSyntaxHighlight, tableMergedCell, uml, chart] =
         await Promise.all([
           import("@toast-ui/editor-plugin-code-syntax-highlight").then(
-            (mod) => mod.default
-          ),
-          import("@toast-ui/editor-plugin-color-syntax").then(
             (mod) => mod.default
           ),
           import("@toast-ui/editor-plugin-table-merged-cell").then(
@@ -98,7 +105,6 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
           { minWidth: 100, maxWidth: 600, minHeight: 100, maxHeight: 300 },
         ],
         [codeSyntaxHighlight, { highlighter: Prism }],
-        colorSyntax,
         tableMergedCell,
         uml,
       ]);
@@ -107,7 +113,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
     loadPlugins();
   }, []);
 
-  // Fetch document data using react-query
+  // Fetch document data using react-query.
   const { data, isLoading, isError } = useQuery({
     queryKey: ["documents", docId],
     queryFn: () => getDocument(docId),
@@ -138,7 +144,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
     localStorage.setItem("markdown", markdown);
   };
 
-  // Handle keydown events to open/close the dropdown
+  // Handle keydown events to open/close the dropdown.
   const handleKeyDown = (event: React.KeyboardEvent) => {
     const editorInstance = editorRef.current?.getInstance();
     if (!editorInstance) return;
@@ -258,15 +264,18 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
         tabIndex={0}
         className="focus:outline-none"
       >
-        <div className="absolute  bottom-4 right-4 z-50">
+        <div className="absolute bottom-4 right-4 z-50">
           <EditorToolbar
             editorMode={editorMode}
             setEditorMode={handleEditorModeChange}
-          />{" "}
+          />
         </div>
+        {editorRef.current && (
+          <CustomToolbar editor={editorRef.current.getInstance()} />
+        )}
         <Editor
           ref={editorRef}
-          height="93.3vh"
+          height="86vh"
           initialValue={data?.[0]?.content || "Enter your content here..."}
           initialEditType="wysiwyg"
           previewStyle="vertical"

@@ -119,42 +119,6 @@ body {
   display: none !important;
 }
 
-.toastui-editor-defaultUI-toolbar {
-  display: flex !important;
-  height: 42px !important;
-  padding-right: 8px !important;
-  gap: 8px !important;
-  align-self: stretch !important;
-
-  border-bottom: 1px solid var(--Border-Presentation-Global-Primary, #d4d4d4) !important;
-  background: var(
-    --Background-Presentation-Form-Header,
-    rgba(255, 255, 255, 0.2)
-  ) !important;
-
-  box-shadow: 0px 2px 9px 0px
-    var(--Background-Presentation-Form-Header-Shadow, rgba(0, 0, 0, 0.1)) !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-.toastui-editor-defaultUI-toolbar {
-  display: flex !important;
-  padding: 5px !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 2px !important;
-  border-radius: 4px !important;
-}
-
-.toastui-editor-toolbar-icons .toastui-editor-toolbar-group {
-  display: flex !important;
-  padding: 5px;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 2px !important;
-  border-radius: 4px !important;
-}
-
 .toastui-editor-contents {
   display: flex !important;
   padding: 0px 120px !important;
@@ -182,4 +146,74 @@ body {
 
 .animate-float-in {
   animation: float-in 0.3s ease-in-out forwards;
+}
+
+/* TODO:remeber to change it's for the color */
+
+.toastui-editor-popup-body
+  .tui-colorpicker-container
+  .tui-colorpicker-clearfix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+/* Custom Scrollbar */
+.toastui-editor-popup-body
+  .tui-colorpicker-container
+  .tui-colorpicker-clearfix::-webkit-scrollbar {
+  width: 6px;
+}
+
+.toastui-editor-popup-body
+  .tui-colorpicker-container
+  .tui-colorpicker-clearfix::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 6px;
+}
+
+.toastui-editor-popup-body
+  .tui-colorpicker-container
+  .tui-colorpicker-clearfix::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* og toolbar re desighn */
+
+/* .toastui-editor-defaultUI-toolbar {
+  display: flex !important;
+  flex-direction: row !important;
+  height: 42px !important;
+  padding-right: 2px !important;
+  padding: 5px !important;
+  gap: 2px !important;
+  align-items: center !important;
+  align-self: stretch !important;
+  border-bottom: 1px solid var(--Border-Presentation-Global-Primary, #d4d4d4) !important;
+  background: var(
+    --Background-Presentation-Form-Header,
+    rgba(255, 255, 255, 0.2)
+  ) !important;
+  box-shadow: 0px 2px 9px 0px
+    var(--Background-Presentation-Form-Header-Shadow, rgba(0, 0, 0, 0.1)) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: 4px !important;
+} */
+
+/* .custom-toolbar-button i {
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+.toastui-editor-toolbar {
+  gap: 8px;
+  padding: 8px;
+} */
+.toastui-editor-defaultUI-toolbar {
+  display: none !important;
 }
