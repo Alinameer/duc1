@@ -183,37 +183,6 @@ body {
   background: #999;
 }
 
-/* og toolbar re desighn */
-
-/* .toastui-editor-defaultUI-toolbar {
-  display: flex !important;
-  flex-direction: row !important;
-  height: 42px !important;
-  padding-right: 2px !important;
-  padding: 5px !important;
-  gap: 2px !important;
-  align-items: center !important;
-  align-self: stretch !important;
-  border-bottom: 1px solid var(--Border-Presentation-Global-Primary, #d4d4d4) !important;
-  background: var(
-    --Background-Presentation-Form-Header,
-    rgba(255, 255, 255, 0.2)
-  ) !important;
-  box-shadow: 0px 2px 9px 0px
-    var(--Background-Presentation-Form-Header-Shadow, rgba(0, 0, 0, 0.1)) !important;
-  backdrop-filter: blur(8px) !important;
-  border-radius: 4px !important;
-} */
-
-/* .custom-toolbar-button i {
-  font-size: 1.2em;
-  vertical-align: middle;
-}
-
-.toastui-editor-toolbar {
-  gap: 8px;
-  padding: 8px;
-} */
 .toastui-editor-defaultUI-toolbar {
   display: none !important;
 }

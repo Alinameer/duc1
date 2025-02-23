@@ -19,13 +19,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getDocument, updateDocument } from "@/api/api";
 import { useDocumentTitle } from "@/hooks/DocumentTitleContext";
-import EditorToolbar from "./EditorModeToggle";
-import {
-  Button,
-  buttonVariants,
-} from "@/app/components/torch/components/Button";
-import { cn } from "@/lib/utils";
+
 import CustomToolbar from "./CustomToolbar";
+import EditorViewType from "./EditorViewType";
 
 // Dynamically import the Editor (disables SSR)
 const Editor = dynamic(
@@ -265,7 +261,7 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
         className="focus:outline-none"
       >
         <div className="absolute bottom-4 right-4 z-50">
-          <EditorToolbar
+          <EditorViewType
             editorMode={editorMode}
             setEditorMode={handleEditorModeChange}
           />

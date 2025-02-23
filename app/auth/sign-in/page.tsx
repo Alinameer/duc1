@@ -19,10 +19,6 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { signin } from "@/api/api";
 import Link from "next/link";
-import { DropDownButton, DropDownButtonContent, DropDownButtonItem, DropDownButtonValue } from "@/app/components/torch/components/DropDownButton";
-import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
-import EditorToolbar from "@/components/genral/EditorModeToggle";
 
 // Updated API endpoint
 // const signIn = async (data: { username: string; password: string }) => {
@@ -108,13 +104,16 @@ const SignIn = () => {
         <Button type="submit">Submit</Button>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-        Don't have an account?{' '}
-        <Link href="/auth/sign-up">
-          <Button variant="link" className="font-medium text-primary underline hover:text-primary-dark">
-            Sign up here
-          </Button >
-        </Link>
-      </p>
+          Don't have an account?{" "}
+          <Link href="/auth/sign-up">
+            <Button
+              variant="link"
+              className="font-medium text-primary underline hover:text-primary-dark"
+            >
+              Sign up here
+            </Button>
+          </Link>
+        </p>
       </form>
     </Form>
   );

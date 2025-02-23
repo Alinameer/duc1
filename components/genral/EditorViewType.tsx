@@ -1,14 +1,13 @@
-import { ActionButton } from "@/app/components/torch/components/ActionButton";
 import { Button } from "@/app/components/torch/components/Button";
 import TabFormItem from "@/app/components/torch/components/TabFormItem";
 import { useState } from "react";
 
-interface EditorToolbarProps {
-  editorMode: "wysiwyg" | "markdown";
-  setEditorMode: (mode: "wysiwyg" | "markdown") => void;
+interface EditorViewTypeProps {
+  editorMode: "wysiwyg" | "markdown" | "print";
+  setEditorMode: (mode: "wysiwyg" | "markdown" | "print") => void;
 }
 
-const EditorToolbar: React.FC<EditorToolbarProps> = ({
+const EditorViewType: React.FC<EditorViewTypeProps> = ({
   editorMode,
   setEditorMode,
 }) => {
@@ -42,7 +41,12 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
             View
           </TabFormItem>
           <div className="  bg-white-alpha-20 w-[1px] h-[28px]" />
-          <TabFormItem theme="dark" componentType={"top"} className="">
+          <TabFormItem
+            theme="dark"
+            componentType={"top"}
+            active={editorMode === "print"}
+            onClick={() => setEditorMode("print")}
+          >
             Print Layout
           </TabFormItem>
           <div className="  bg-white-alpha-20 w-[1px] h-[28px]" />
@@ -73,4 +77,4 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   );
 };
 
-export default EditorToolbar;
+export default EditorViewType;

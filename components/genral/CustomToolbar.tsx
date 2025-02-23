@@ -48,6 +48,12 @@ const CustomToolbar: React.FC<CustomToolbarProps> = ({ editor }) => {
     }
   };
 
+  const handleHeading = () => {
+    if (editor) {
+      editor.eventEmitter.emit("openPopup", "heading");
+    }
+  };
+
   return (
     <div className="flex h-[42px] pr-2 p-[5px] gap-[2px] items-center self-stretch border-b border-[var(--Border-Presentation-Global-Primary,#d4d4d4)] bg-[var(--Background-Presentation-Form-Header,rgba(255,255,255,0.2))] shadow-[0px_2px_9px_0px_var(--Background-Presentation-Form-Header-Shadow,rgba(0,0,0,0.1))] backdrop-blur-[8px] rounded-[4px]">
       <Button size={"M"} variant={"BorderStyle"}>
@@ -75,11 +81,7 @@ const CustomToolbar: React.FC<CustomToolbarProps> = ({ editor }) => {
 
       <div className="bg-border-presentation-global-primary w-[1px] h-[28px]" />
 
-      <Button
-        size={"M"}
-        variant={"BlueContStyle"}
-        onClick={() => handleCommand("bold")}
-      >
+      <Button size={"M"} variant={"BlueContStyle"} onClick={handleHeading}>
         Normal Text
         <i className="ri-arrow-down-s-line"></i>
       </Button>
