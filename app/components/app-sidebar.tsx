@@ -29,6 +29,7 @@ import {
   deleteDocument,
   createCategory,
   createDocument,
+  getWorkSpaces,
 } from "@/api/api";
 
 import {
@@ -251,7 +252,7 @@ function CategoryItem({
             trigger={
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                <SidebarMenuButton
+                  <SidebarMenuButton
                     onClick={() => setSelectId(category.id)}
                     className={twMerge(
                       "flex items-center gap-2 w-full",
@@ -319,6 +320,7 @@ function CategoryItem({
 }
 
 export function AppSidebar() {
+  const queryClient = useQueryClient();
   const {
     data: categories,
     isLoading,
@@ -327,8 +329,6 @@ export function AppSidebar() {
     queryKey: ["c"],
     queryFn: getCategory,
   });
-
-  const queryClient = useQueryClient();
 
   const createCategoryMutation = useMutation({
     mutationFn: createCategory,

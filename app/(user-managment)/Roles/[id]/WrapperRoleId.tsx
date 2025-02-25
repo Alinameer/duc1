@@ -5,11 +5,11 @@ import {
   getPermissionsInRole,
   getPermissionsNotInRole,
 } from "@/api/api";
-import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/app/components/torch/components/Button";
 
 type Permission = {
   id: string;

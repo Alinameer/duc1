@@ -3,7 +3,6 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -19,9 +18,9 @@ import { signUpSchema } from "../AuthSchema";
 import { signUp } from "@/api/api";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
+import { Button } from "@/app/components/torch/components/Button";
 
 const SignUp = () => {
-
   const { mutate } = useMutation({
     mutationFn: signUp,
     onSuccess: (data) => {
@@ -72,7 +71,11 @@ const SignUp = () => {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Enter your password" {...field} />
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  {...field}
+                />
               </FormControl>
               <FormDescription>
                 Make sure your password is at least 6 characters long.
@@ -108,13 +111,16 @@ const SignUp = () => {
         <Button type="submit">Submit</Button>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-        Already have an account?
-        <Link href="/auth/sign-in">
-          <Button variant="link" className="font-medium text-primary underline hover:text-primary-dark">
-            Sign up here
-          </Button >
-        </Link>
-      </p>
+          Already have an account?
+          <Link href="/auth/sign-in">
+            <Button
+              variant="BlueContStyle"
+              className="font-medium text-primary underline hover:text-primary-dark"
+            >
+              Sign in here
+            </Button>
+          </Link>
+        </p>
       </form>
     </Form>
   );

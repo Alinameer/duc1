@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -10,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "./torch/components/Button";
 
 interface InputModalProps {
   open: boolean;
@@ -77,10 +77,7 @@ const InputModal: React.FC<InputModalProps> = ({
           onKeyDown={handleKeyDown}
         />
         <DialogFooter className="mt-4 flex justify-end space-x-2">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-          >
+          <Button variant="BorderStyle" onClick={handleCancel}>
             Cancel
           </Button>
           <Button onClick={handleSave}>Save</Button>

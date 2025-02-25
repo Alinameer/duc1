@@ -5,7 +5,6 @@ import { signInSchema } from "../AuthSchema"; // assuming this is where your sch
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -19,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { signin } from "@/api/api";
 import Link from "next/link";
+import { Button } from "@/app/components/torch/components/Button";
+import TopBar from "@/components/genral/TopBar";
 
 // Updated API endpoint
 // const signIn = async (data: { username: string; password: string }) => {
@@ -102,18 +103,19 @@ const SignIn = () => {
         />
 
         <Button type="submit">Submit</Button>
-
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link href="/auth/sign-up">
-            <Button
-              variant="link"
-              className="font-medium text-primary underline hover:text-primary-dark"
-            >
-              Sign up here
-            </Button>
-          </Link>
-        </p>
+        <div className="flex-nowrap flex flex-col items-center justify-centerd">
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link href="/auth/sign-up">
+              <Button
+                variant={"BlueContStyle"}
+                className="font-medium text-primary underline "
+              >
+                Sign up here
+              </Button>
+            </Link>
+          </p>
+        </div>
       </form>
     </Form>
   );

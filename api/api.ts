@@ -1,11 +1,12 @@
 "use server";
 import axios from "axios";
 import { cookies } from "next/headers";
+import axiosInstance from "./axios";
 
 const API_BASE_URL = "http://192.168.0.148:8000/api";
 export const getDocument = async (docId: string) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/document/get/${docId}`);
+    const response = await axiosInstance.get(`/document/get/${docId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching document:", error);
@@ -20,6 +21,8 @@ export const signin = async (data: { username: string; password: string }) => {
     if (response.status !== 200) {
       return { success: false, message: response.data.message };
     }
+    console.log(response.data.access);
+
     cook.set("token", response.data.access);
     return response.data;
   } catch (error) {
@@ -80,7 +83,7 @@ export const rolePermission = async () => {
 };
 export const getCategory = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/category/get-category`);
+    const response = await axiosInstance.get(`/category/get-category`);
     return response.data;
   } catch (error) {
     console.error("Error fetching document:", error);
@@ -318,7 +321,7 @@ export const assignPermissionToRole = async (data: {
 };
 
 export const deletePermission = async (
-  permissionIds: string[], 
+  permissionIds: string[],
   roleId: string
 ) => {
   try {
@@ -349,7 +352,6 @@ export const deletePermission = async (
 
 export const createRole = async (data: { role: string }) => {
   try {
-    
     const response = await axios.post(`${API_BASE_URL}/role/create_role`, data);
     console.log(response);
 
@@ -366,7 +368,6 @@ export const createRole = async (data: { role: string }) => {
     };
   }
 };
-
 
 export const deleteRole = async (data: { id: string }) => {
   try {
@@ -389,15 +390,9 @@ export const deleteRole = async (data: { id: string }) => {
   }
 };
 
-export const updateRole = async (data: {
-  id: string;
-  role?: string;
-}) => {
+export const updateRole = async (data: { id: string; role?: string }) => {
   try {
-    const response = await axios.put(
-      `${API_BASE_URL}/role/update_roles`,
-      data
-    );
+    const response = await axios.put(`${API_BASE_URL}/role/update_roles`, data);
     console.log(response);
 
     if (response.status !== 200) {
@@ -452,7 +447,6 @@ export const getRolesNotInUser = async (id: string) => {
   }
 };
 
-
 export const assignRoleToUser = async (data: {
   user_id: string;
   role_id: string[];
@@ -476,11 +470,7 @@ export const assignRoleToUser = async (data: {
   }
 };
 
-
-export const deleteRoleFromUser= async (
-  roleIds: string[], 
-  userId: string
-) => {
+export const deleteRoleFromUser = async (roleIds: string[], userId: string) => {
   try {
     const response = await axios.delete(
       `${API_BASE_URL}/assignroles/delete_roles_from_user?user_id=${userId}`,
@@ -504,5 +494,16 @@ export const deleteRoleFromUser= async (
       success: false,
       message: error.response?.data?.message || "An error occurred",
     };
+  }
+};
+
+export const getWorkSpaces = async () => {
+  try {
+    const response = await axiosInstance.get("/workspace/get_all");
+    console.log("Response data:", response.data); // Debugging line
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching workspaces:", error);
+    throw error;
   }
 };

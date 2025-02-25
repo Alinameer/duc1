@@ -1,10 +1,15 @@
 "use client";
-import { assignRoleToUser, deleteRoleFromUser, getRoleInUser, getRolesNotInUser } from "@/api/api";
-import { Button } from "@/components/ui/button";
+import {
+  assignRoleToUser,
+  deleteRoleFromUser,
+  getRoleInUser,
+  getRolesNotInUser,
+} from "@/api/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/app/components/torch/components/Button";
 
 function WrapperRoleId({ id }: { id: string }) {
   const router = useRouter();
@@ -13,7 +18,7 @@ function WrapperRoleId({ id }: { id: string }) {
     queryKey: ["roles-in-user", id],
     queryFn: () => getRoleInUser(id),
   });
-  
+
   const { data: rolesNotInUser } = useQuery({
     queryKey: ["roles-not-in-user", id],
     queryFn: () => getRolesNotInUser(id),
@@ -39,21 +44,15 @@ function WrapperRoleId({ id }: { id: string }) {
   };
 
   const { mutate: removeRole } = useMutation({
-    mutationFn: ({
-      roleId,
-      userId,
-    }: {
-      userId: string;
-      roleId: string;
-    }) => deleteRoleFromUser([roleId], userId),
+    mutationFn: ({ roleId, userId }: { userId: string; roleId: string }) =>
+      deleteRoleFromUser([roleId], userId),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roles-in-user", id] });
       queryClient.invalidateQueries({ queryKey: ["roles-not-in-user", id] });
       console.log("Role removed successfully");
     },
-    onError: (error: any) =>
-      console.error("Error during role removal:", error),
+    onError: (error: any) => console.error("Error during role removal:", error),
   });
 
   const handleDelete = (roleId: string) => {
@@ -77,7 +76,9 @@ function WrapperRoleId({ id }: { id: string }) {
               key={role.id}
               className="bg-white p-4 shadow-md rounded-lg flex justify-between hover:bg-blue-50 transition"
             >
-              <h2 className="text-lg font-semibold text-gray-800">{role.role}</h2>
+              <h2 className="text-lg font-semibold text-gray-800">
+                {role.role}
+              </h2>
               <Button onClick={() => handleAssignRole(role?.id)}>
                 <ArrowRightCircle className="bg-white text-black" />
               </Button>
@@ -91,7 +92,9 @@ function WrapperRoleId({ id }: { id: string }) {
               key={role.id}
               className="bg-white p-4 shadow-md rounded-lg flex justify-between hover:bg-blue-50 transition"
             >
-              <h2 className="text-lg font-semibold text-gray-800">{role.role}</h2>
+              <h2 className="text-lg font-semibold text-gray-800">
+                {role.role}
+              </h2>
 
               <Button onClick={() => handleDelete(role.id)}>
                 <ArrowLeftCircle className="bg-white text-black" />

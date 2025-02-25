@@ -3,9 +3,9 @@ import { createRole, deleteRole, updateRole, getRoles } from "@/api/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import InputModal from "@/app/components/InputModal";
 import { Edit, Trash } from "lucide-react";
+import { Button } from "@/app/components/torch/components/Button";
 
 // Define the Role interface for type safety.
 interface Role {
@@ -15,7 +15,6 @@ interface Role {
 
 const Roles: React.FC = () => {
   const queryClient = useQueryClient();
-
 
   const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState<boolean>(false);
   const [roleToEdit, setRoleToEdit] = useState<Role | null>(null);
@@ -35,15 +34,13 @@ const Roles: React.FC = () => {
       console.error("Error during role creation:", error),
   });
 
-
   const updateRoleMutation = useMutation({
     mutationFn: updateRole,
     onSuccess: (data) => {
       console.log("Role updated successfully:", data);
       queryClient.invalidateQueries({ queryKey: ["base-roles"] });
     },
-    onError: (error: any) =>
-      console.error("Error during role update:", error),
+    onError: (error: any) => console.error("Error during role update:", error),
   });
 
   const { mutate: deleteRoles } = useMutation({
@@ -53,7 +50,6 @@ const Roles: React.FC = () => {
     onError: (error: any) =>
       console.error("Error during role deletion:", error),
   });
-
 
   const handleDelete = (role: Role) => {
     if (confirm(`Are you sure you want to delete role "${role.role}"?`)) {

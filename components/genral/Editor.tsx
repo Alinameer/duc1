@@ -5,10 +5,9 @@ import React, {
   useRef,
   useReducer,
   useState,
-  useCallback,
+  KeyboardEvent,
 } from "react";
 import dynamic from "next/dynamic";
-import ReactDOM from "react-dom/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import {
@@ -22,6 +21,7 @@ import { useDocumentTitle } from "@/hooks/DocumentTitleContext";
 
 import CustomToolbar from "./CustomToolbar";
 import EditorViewType from "./EditorViewType";
+import PrintLayout from "./PrintLayout";
 
 // Dynamically import the Editor (disables SSR)
 const Editor = dynamic(
@@ -69,9 +69,10 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
   const { setTitle } = useDocumentTitle();
 
-  const [editorMode, setEditorMode] = useState<"wysiwyg" | "markdown">(
-    "wysiwyg"
-  );
+  // Extend editorMode type to include "print"
+  const [editorMode, setEditorMode] = useState<
+    "wysiwyg" | "markdown" | "print"
+  >("wysiwyg");
   const [dropdownState, dispatchDropdown] = useReducer(dropdownReducer, {
     visible: false,
     position: { top: 0, left: 0 },
@@ -113,7 +114,9 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["documents", docId],
     queryFn: () => getDocument(docId),
+    enabled: !!docId,
   });
+  console.log(data, "dddddddddddd");
 
   useEffect(() => {
     if (data?.[0]?.title) {
@@ -140,8 +143,10 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
     localStorage.setItem("markdown", markdown);
   };
 
-  // Handle keydown events to open/close the dropdown.
+  // Handle keydown events (skip in print mode)
   const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (editorMode === "print") return;
+
     const editorInstance = editorRef.current?.getInstance();
     if (!editorInstance) return;
 
@@ -243,10 +248,15 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading document.</div>;
 
-  const handleEditorModeChange = (mode: "wysiwyg" | "markdown") => {
+  // Updated function to handle mode changes.
+  const handleEditorModeChange = (mode: "wysiwyg" | "markdown" | "print") => {
+    setEditorMode(mode);
+    if (mode === "print") {
+      // No need to adjust the editor instance for print mode.
+      return;
+    }
     if (editorRef.current) {
       const editorInstance = editorRef.current.getInstance();
-      setEditorMode(mode);
       editorInstance.changeMode(mode);
       editorInstance.focus();
     }
@@ -264,20 +274,31 @@ const MyEditor: React.FC<MyEditorProps> = ({ docId }) => {
           <EditorViewType
             editorMode={editorMode}
             setEditorMode={handleEditorModeChange}
+            markdownContent={data?.[0]?.content || ""}
+            documentTitle={data?.[0]?.title || "Untitled Document"}
           />
         </div>
-        {editorRef.current && (
-          <CustomToolbar editor={editorRef.current.getInstance()} />
+        {editorMode !== "print" && (
+          <>
+            {editorRef.current && (
+              <CustomToolbar editor={editorRef.current.getInstance()} />
+            )}
+            <Editor
+              ref={editorRef}
+              height="86vh"
+              initialValue={data?.[0]?.content || "Enter your content here..."}
+              initialEditType="wysiwyg"
+              previewStyle="vertical"
+              plugins={plugins}
+              onChange={handleSave}
+            />
+          </>
         )}
-        <Editor
-          ref={editorRef}
-          height="86vh"
-          initialValue={data?.[0]?.content || "Enter your content here..."}
-          initialEditType="wysiwyg"
-          previewStyle="vertical"
-          plugins={plugins}
-          onChange={handleSave}
-        />
+        {editorMode === "print" && (
+          <PrintLayout
+            content={data?.[0]?.content || "Enter your content here..."}
+          />
+        )}
       </div>
 
       {dropdownState.visible && (
